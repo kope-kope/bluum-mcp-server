@@ -59,10 +59,13 @@ User → Claude Desktop → MCP Server → Bluum API
 │          MCP Server (TypeScript)        │
 │  ┌─────────────────────────────────┐   │
 │  │   Tool Registry                 │   │
+│  │   - list_positions              │   │
+│  │   - get_position                │   │
 │  │   - list_orders                 │   │
 │  │   - create_order                │   │
 │  │   - get_order_status            │   │
 │  │   - list_assets                 │   │
+│  │   - search_assets               │   │
 │  │   - get_transactions            │   │
 │  │   - fund_account                │   │
 │  │   - withdraw_funds              │   │
@@ -97,16 +100,13 @@ User → Claude Desktop → MCP Server → Bluum API
 #### **Priority 1: Trading & Market Data**
 | MCP Tool Name | HTTP Method | Endpoint | Description |
 |--------------|-------------|----------|-------------|
+| `list_positions` | GET | `/trading/accounts/{account_id}/positions` | View current portfolio positions with P/L |
+| `get_position` | GET | `/trading/accounts/{account_id}/positions/{position_id}` | Get specific position details |
 | `list_orders` | GET | `/trading/accounts/{account_id}/orders` | List all orders with filtering |
 | `create_order` | POST | `/trading/accounts/{account_id}/orders` | Place buy/sell order |
 | `get_order_status` | GET | `/trading/orders/{order_id}` | Get specific order details |
 | `list_assets` | GET | `/assets` | Browse tradable assets |
-| `search_asset` | GET | `/assets?symbol={symbol}` | Find specific asset by symbol |
-
-**Note**: The OpenAPI spec doesn't include a `/positions` endpoint. You'll need to either:
-- Check if this endpoint exists but is undocumented
-- Calculate positions from filled orders
-- Request this feature from Bluum
+| `search_assets` | GET | `/assets/search` | Search assets by ticker, name, or partial match |
 
 #### **Priority 2: Wallet Operations**
 | MCP Tool Name | HTTP Method | Endpoint | Description |
@@ -195,6 +195,22 @@ export class BluumApiClient {
     });
   }
 
+  async listPositions(accountId: string, filters?: PositionFilters) {
+    const { data } = await this.client.get(
+      `/trading/accounts/${accountId}/positions`,
+      { params: filters }
+    );
+    return data;
+  }
+
+  async getPosition(accountId: string, positionId: string, refreshPrices = false) {
+    const { data } = await this.client.get(
+      `/trading/accounts/${accountId}/positions/${positionId}`,
+      { params: { refresh_prices: refreshPrices } }
+    );
+    return data;
+  }
+
   async listOrders(accountId: string, filters?: OrderFilters) {
     const { data } = await this.client.get(
       `/trading/accounts/${accountId}/orders`,
@@ -208,6 +224,13 @@ export class BluumApiClient {
       `/trading/accounts/${accountId}/orders`,
       order
     );
+    return data;
+  }
+
+  async searchAssets(query?: string, filters?: AssetSearchFilters) {
+    const { data } = await this.client.get('/assets/search', {
+      params: { q: query, ...filters }
+    });
     return data;
   }
 
@@ -255,6 +278,28 @@ export const ListAssetsInputSchema = z.object({
   asset_class: z.enum(['us_equity', 'crypto']).optional(),
   tradable: z.boolean().optional(),
   symbol: z.string().optional(), // For searching specific assets
+});
+
+export const ListPositionsInputSchema = z.object({
+  account_id: z.string().uuid(),
+  symbol: z.string().optional(),
+  non_zero_only: z.boolean().default(false),
+  refresh_prices: z.boolean().default(false),
+});
+
+export const GetPositionInputSchema = z.object({
+  account_id: z.string().uuid(),
+  position_id: z.string().uuid(),
+  refresh_prices: z.boolean().default(false),
+});
+
+export const SearchAssetsInputSchema = z.object({
+  q: z.string().optional(),
+  status: z.enum(['active', 'inactive']).optional(),
+  asset_class: z.enum(['us_equity', 'crypto']).optional(),
+  tradable: z.boolean().optional(),
+  limit: z.number().min(1).max(100).default(50),
+  offset: z.number().min(0).default(0),
 });
 ```
 
@@ -382,6 +427,100 @@ export const toolDefinitions = [
         },
       },
       required: ['account_id', 'symbol', 'qty', 'side', 'type', 'time_in_force'],
+    },
+  },
+  {
+    name: 'list_positions',
+    description: 'View current portfolio positions for an account, including quantity, cost basis, current value, and unrealized profit/loss. Optionally refresh live prices from market data providers.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        account_id: {
+          type: 'string',
+          format: 'uuid',
+          description: 'The account ID to retrieve positions for',
+        },
+        symbol: {
+          type: 'string',
+          description: 'Filter positions by ticker symbol (e.g., AAPL)',
+        },
+        non_zero_only: {
+          type: 'boolean',
+          default: false,
+          description: 'Only return positions with non-zero quantity',
+        },
+        refresh_prices: {
+          type: 'boolean',
+          default: false,
+          description: 'Fetch live prices from market data providers (adds latency)',
+        },
+      },
+      required: ['account_id'],
+    },
+  },
+  {
+    name: 'get_position',
+    description: 'Retrieve detailed information about a specific position, including P/L calculations and optionally live market prices.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        account_id: {
+          type: 'string',
+          format: 'uuid',
+          description: 'The account ID',
+        },
+        position_id: {
+          type: 'string',
+          format: 'uuid',
+          description: 'The position ID to retrieve',
+        },
+        refresh_prices: {
+          type: 'boolean',
+          default: false,
+          description: 'Fetch live price from market data providers',
+        },
+      },
+      required: ['account_id', 'position_id'],
+    },
+  },
+  {
+    name: 'search_assets',
+    description: 'Search for assets by ticker symbol, name, or partial match. More flexible than list_assets for finding specific securities.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        q: {
+          type: 'string',
+          description: 'Search query - ticker, name, or partial match (e.g., "app" matches AAPL)',
+        },
+        status: {
+          type: 'string',
+          enum: ['active', 'inactive'],
+          description: 'Filter by asset status',
+        },
+        asset_class: {
+          type: 'string',
+          enum: ['us_equity', 'crypto'],
+          description: 'Filter by asset class',
+        },
+        tradable: {
+          type: 'boolean',
+          description: 'Filter for assets that are currently tradable',
+        },
+        limit: {
+          type: 'number',
+          minimum: 1,
+          maximum: 100,
+          default: 50,
+          description: 'Maximum number of results to return',
+        },
+        offset: {
+          type: 'number',
+          minimum: 0,
+          default: 0,
+          description: 'Number of results to skip (for pagination)',
+        },
+      },
     },
   },
   {
@@ -715,13 +854,28 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 
 ## Example Conversations
 
+### Portfolio Management Scenario
+```
+User: Show me my current portfolio positions
+Claude: [Uses list_positions tool with non_zero_only=true]
+Returns: "You have 3 positions:
+- AAPL: 10.5 shares, avg cost $175.50, current value $1,890 (+$47.25, +2.56%)
+- MSFT: 5 shares, avg cost $350, current value $1,827.50 (+$77.50, +4.43%)
+- Total unrealized gain: +$124.75"
+
+User: What's the current price of my Apple position?
+Claude: [Uses get_position tool with refresh_prices=true]
+Returns: "AAPL position: 10.5 shares at $180.25 (REAL_TIME from ALPACA as of 10:30am)
+Market value: $1,892.63, Unrealized P/L: +$49.88 (+2.71%)"
+```
+
 ### Trading Scenario
 ```
-User: What can I trade on Bluum?
-Claude: [Uses list_assets tool]
-Returns: "Bluum supports trading US equities and cryptocurrencies..."
+User: Search for Tesla stock
+Claude: [Uses search_assets tool with q="Tesla"]
+Returns: "Found TSLA - Tesla, Inc. (US Equity), tradable on NASDAQ"
 
-User: Buy 5 shares of Apple at market price for account acc_123...
+User: Buy 5 shares of Tesla at market price for account acc_123...
 Claude: [Uses create_order tool]
 Returns: "Order placed successfully! Order ID: ord_xyz... Status: Accepted..."
 
@@ -745,17 +899,23 @@ Returns: "Deposit initiated. Transaction ID: txn_abc... Status: Pending..."
 
 ## Known Limitations & Gaps
 
-1. **Positions Endpoint Missing**: The OpenAPI spec doesn't include a positions/portfolio endpoint. This is a critical feature for a trading platform. Recommend:
-   - Contacting Bluum to confirm if this endpoint exists
-   - If not, calculating positions from order history (less accurate)
+1. **Market Data Latency**: Real-time prices are available via the `refresh_prices` parameter on position endpoints, but this adds latency as it fetches from market data providers (Alpaca, Naya). For high-frequency price checks:
+   - Cache prices when not needed in real-time
+   - Use `refresh_prices=false` (default) for faster responses with slightly stale prices
+   - Consider the `price_confidence` field to determine data freshness
 
-2. **Market Data**: No real-time quote data in the API spec. Users can see assets but not live prices. Consider:
-   - Integrating a third-party market data API
-   - Directing users to check prices externally
+2. **Order Modification**: No PATCH/PUT endpoint for modifying orders. Users must cancel and recreate orders to change parameters.
 
-3. **Order Modification**: No PATCH/PUT endpoint for modifying orders. Users must cancel and recreate.
+3. **Portfolio Analytics**: While positions include unrealized P/L, there are no aggregate portfolio metrics:
+   - No total portfolio value endpoint
+   - No historical performance/returns data
+   - No realized gains tracking
+   - Consider calculating these client-side from positions and transactions
 
-4. **Historical Data**: Limited to transaction history. No performance metrics or portfolio analytics.
+4. **Asset Search Limitations**: The search endpoint exists but may have limitations:
+   - Unclear if it supports fuzzy matching or just prefix matching
+   - No indication of search ranking algorithm
+   - Test thoroughly with various query patterns
 
 ---
 
