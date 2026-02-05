@@ -1,0 +1,35 @@
+{
+  "name": "bluum-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Bluum Finance Investment API - enables Claude to interact with brokerage infrastructure for trading, portfolio management, and wallet operations",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "generate-types": "openapi-typescript openapi.yaml -o src/types/generated.ts"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "bluum",
+    "finance",
+    "trading",
+    "brokerage",
+    "investment"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.7.9",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "openapi-typescript": "^7.4.4",
+    "typescript": "^5.7.2"
+  }
+}

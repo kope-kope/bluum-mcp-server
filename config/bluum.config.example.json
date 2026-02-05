@@ -1,0 +1,6 @@
+{
+  "apiKey": "your_bluum_api_key_here",
+  "apiSecret": "your_bluum_api_secret_here",
+  "environment": "sandbox",
+  "defaultAccountId": "00000000-0000-0000-0000-000000000000"
+}
