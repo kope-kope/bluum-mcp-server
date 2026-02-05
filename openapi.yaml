@@ -1,0 +1,1355 @@
+openapi: 3.0.0
+info:
+  title: Bluum Finance Investment API
+  version: 1.0.0
+  description: |
+    The Bluum Finance API provides embeddable investment experiences, allowing Fintechs to manage client accounts, facilitate trading, handle document uploads, and manage wallet operations.
+
+    ### Authentication
+    This API uses **HTTP Basic Authentication** where the **API Key** is used as the username and the **API Secret** is used as the password. The client must Base64 encode the string `API_KEY:API_SECRET` and send it in the `Authorization` header.
+servers:
+  - url: https://api.bluum.finance/v1
+    description: Production Environment
+  - url: https://sandbox.api.bluum.finance/v1
+    description: Sandbox/Testing Environment
+security:
+  - BluumBasicAuth: []
+paths:
+  /accounts:
+    get:
+      tags:
+        - Accounts
+      summary: List all user accounts
+      operationId: listAccounts
+      responses:
+        '200':
+          description: A list of the user's investment accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+        - Accounts
+      summary: Create a new investment account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAccountRequest'
+      responses:
+        '201':
+          description: Account successfully created and is pending approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+  /accounts/{account_id}:
+    get:
+      tags:
+        - Accounts
+      summary: Retrieve a specific account
+      operationId: getAccount
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: acc_a1b2c3d4e5f6g7h8
+      responses:
+        '200':
+          description: Account details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /documents/accounts/{account_id}/upload:
+    post:
+      tags:
+        - Document Management
+      summary: Upload a document for an account
+      operationId: uploadDocument
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentUploadRequest'
+      responses:
+        '201':
+          description: Document uploaded and processing has begun
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+    get:
+      tags:
+        - Document Management
+      summary: List documents for an account
+      operationId: listDocuments
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        - name: document_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - id_verification
+              - proof_of_address
+              - w9_form
+            description: Filter documents by type.
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - processing
+              - approved
+              - rejected
+            description: Filter documents by status.
+      responses:
+        '200':
+          description: List of documents for the account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /documents/{document_id}:
+    get:
+      tags:
+        - Document Management
+      summary: Retrieve a specific document
+      operationId: getDocument
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: doc_a1b2c3d4e5f6g7h8
+      responses:
+        '200':
+          description: Document details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags:
+        - Document Management
+      summary: Delete a document
+      operationId: deleteDocument
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: doc_a1b2c3d4e5f6g7h8
+      responses:
+        '204':
+          description: Document deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /trading/accounts/{account_id}/orders:
+    post:
+      tags:
+        - Trading
+      summary: Place a new investment order
+      operationId: createOrder
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Order accepted by the system
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+    get:
+      tags:
+        - Trading
+      summary: List orders for an account
+      operationId: listOrders
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - accepted
+              - filled
+              - partially_filled
+              - canceled
+              - rejected
+            description: Filter orders by status.
+        - name: symbol
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter orders by symbol.
+        - name: side
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - buy
+              - sell
+            description: Filter orders by side.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+            description: Maximum number of orders to return.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            description: Number of orders to skip for pagination.
+      responses:
+        '200':
+          description: List of orders for the account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /trading/orders/{order_id}:
+    get:
+      tags:
+        - Trading
+      summary: Retrieve a specific trade order
+      operationId: getOrder
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: ord_x9y8z7a6b5c4d3e2
+      responses:
+        '200':
+          description: Order details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /wallet/accounts/{account_id}/funding:
+    post:
+      tags:
+        - Wallet
+      summary: Fund an investment account (deposit)
+      operationId: fundAccount
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundRequest'
+      responses:
+        '202':
+          description: Deposit request accepted and is pending processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+  /wallet/accounts/{account_id}/transactions:
+    get:
+      tags:
+        - Wallet
+      summary: List transactions for an account
+      operationId: listTransactions
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - deposit
+              - withdrawal
+            description: Filter transactions by type.
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pending
+              - processing
+              - settled
+              - failed
+              - canceled
+            description: Filter transactions by status.
+        - name: funding_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - fiat
+              - crypto
+            description: Filter transactions by funding type.
+        - name: date_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            description: Filter transactions from this date (YYYY-MM-DD).
+        - name: date_to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            description: Filter transactions to this date (YYYY-MM-DD).
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+            description: Maximum number of transactions to return.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            description: Number of transactions to skip for pagination.
+      responses:
+        '200':
+          description: List of transactions for the account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /wallet/withdrawals:
+    post:
+      tags:
+        - Wallet
+      summary: Withdraw funds from an investment account
+      operationId: withdrawFunds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundRequest'
+      responses:
+        '202':
+          description: Withdrawal request accepted and is pending processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+  /assets:
+    get:
+      tags:
+        - Assets
+      summary: Retrieve a list of tradable assets
+      operationId: listAssets
+      parameters:
+        - name: asset_class
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - us_equity
+              - crypto
+            description: Filter by asset class.
+        - name: tradable
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Filter for assets that are currently tradable.
+      responses:
+        '200':
+          description: List of assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+components:
+  securitySchemes:
+    BluumBasicAuth:
+      type: http
+      scheme: basic
+      description: |
+        HTTP Basic Authentication using the **API Key** as username and **API Secret** as password.
+  schemas:
+    NewAccountRequest:
+      type: object
+      required:
+        - account_type
+        - contact
+        - identity
+      properties:
+        account_type:
+          type: string
+          enum:
+            - trading
+            - individual
+            - joint
+            - ira
+            - corporate
+          description: The type of investment account to open.
+          example: trading
+        contact:
+          type: object
+          required:
+            - email_address
+            - phone_number
+            - street_address
+            - city
+            - state
+            - postal_code
+            - country
+          properties:
+            email_address:
+              type: string
+              format: email
+              description: Primary email address for account communications.
+              example: john.doe@example.com
+            phone_number:
+              type: string
+              description: Primary phone number (format may vary by country).
+              example: '+15555555555'
+            street_address:
+              type: array
+              items:
+                type: string
+              description: Street address lines (supports multiple lines).
+              example:
+                - 123 Main St
+            city:
+              type: string
+              description: City name.
+              example: Berkeley
+            state:
+              type: string
+              description: State or province code (format varies by country).
+              example: CA
+            postal_code:
+              type: string
+              description: Postal or ZIP code (format varies by country).
+              example: '94704'
+            country:
+              type: string
+              description: Country code (format varies by country).
+              example: USA
+        identity:
+          type: object
+          required:
+            - first_name
+            - last_name
+            - date_of_birth
+            - tax_id
+            - tax_id_type
+            - country_of_citizenship
+            - country_of_birth
+            - country_of_tax_residence
+          properties:
+            first_name:
+              type: string
+              description: First name of the account holder.
+              example: Tosin
+            last_name:
+              type: string
+              description: Last name of the account holder.
+              example: Oladok
+            date_of_birth:
+              type: string
+              format: date
+              description: Date of birth in YYYY-MM-DD format.
+              example: '1980-01-01'
+            tax_id:
+              type: string
+              description: Tax identification number (format varies by country).
+              example: 123-45-6781
+            tax_id_type:
+              type: string
+              enum:
+                - USA_SSN
+                - USA_EIN
+                - CAN_SIN
+                - GBR_NINO
+                - AUS_TFN
+              description: Type of tax identification number.
+              example: USA_SSN
+            country_of_citizenship:
+              type: string
+              description: ISO country code for citizenship (format varies by country).
+              example: NGA
+            country_of_birth:
+              type: string
+              description: ISO country code for country of birth (format varies by country).
+              example: NGA
+            country_of_tax_residence:
+              type: string
+              description: ISO country code for tax residence (format varies by country).
+              example: NGA
+            funding_source:
+              type: array
+              items:
+                type: string
+                enum:
+                  - employment_income
+                  - business_income
+                  - investment_income
+                  - inheritance
+                  - gift
+                  - other
+              description: Primary sources of funding for the account.
+              example:
+                - employment_income
+        disclosures:
+          type: object
+          description: Regulatory disclosures and compliance information.
+          properties:
+            is_control_person:
+              type: boolean
+              description: Whether the person is a control person of a public company.
+              default: false
+            is_affiliated_exchange_or_finra:
+              type: boolean
+              description: Whether affiliated with an exchange or FINRA member.
+              default: false
+            is_politically_exposed:
+              type: boolean
+              description: Whether the person is politically exposed.
+              default: false
+            immediate_family_exposed:
+              type: boolean
+              description: Whether immediate family members are politically exposed.
+              default: false
+        agreements:
+          type: array
+          description: Legal agreements signed by the account holder.
+          items:
+            type: object
+            required:
+              - agreement
+              - agreed
+              - signed_at
+              - ip_address
+            properties:
+              agreement:
+                type: string
+                enum:
+                  - account_agreement
+                  - customer_agreement
+                  - margin_agreement
+                  - options_agreement
+                  - privacy_policy
+                description: Type of agreement signed.
+                example: account_agreement
+              agreed:
+                type: boolean
+                description: Whether the user agreed to the terms.
+                example: true
+              signed_at:
+                type: string
+                format: date-time
+                description: Timestamp when the agreement was signed.
+                example: '2025-10-17T18:00:00Z'
+              ip_address:
+                type: string
+                format: ipv4
+                description: IP address from which the agreement was signed.
+                example: 127.0.0.1
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the account.
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        account_number:
+          type: string
+          description: The actual brokerage account number.
+          example: '968430933'
+        status:
+          type: string
+          enum:
+            - SUBMITTED
+            - ACTIVE
+            - PENDING_APPROVAL
+            - CLOSED
+            - SUSPENDED
+          description: Current status of the account.
+          example: SUBMITTED
+        crypto_status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+          description: Status of crypto trading capabilities.
+          example: INACTIVE
+        currency:
+          type: string
+          description: Primary currency of the account.
+          example: USD
+        last_equity:
+          type: string
+          description: Last recorded equity value.
+          example: '0'
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the account was created.
+          example: '2025-10-18T01:08:46.263583Z'
+        contact:
+          type: object
+          properties:
+            email_address:
+              type: string
+              format: email
+              description: Primary email address for account communications.
+              example: john.doe@example.com
+            phone_number:
+              type: string
+              description: Primary phone number (format may vary by country).
+              example: '+15555555555'
+            street_address:
+              type: array
+              items:
+                type: string
+              description: Street address lines (supports multiple lines).
+              example:
+                - 123 Main St
+            local_street_address:
+              type: string
+              nullable: true
+              description: Localized street address if different from primary address.
+              example: null
+            city:
+              type: string
+              description: City name.
+              example: Berkeley
+            state:
+              type: string
+              description: State or province code (format varies by country).
+              example: CA
+            postal_code:
+              type: string
+              description: Postal or ZIP code (format varies by country).
+              example: '94704'
+            country:
+              type: string
+              description: Country code (format varies by country).
+              example: USA
+        identity:
+          type: object
+          properties:
+            first_name:
+              type: string
+              description: First name of the account holder.
+              example: Tosin
+            last_name:
+              type: string
+              description: Last name of the account holder.
+              example: Oladok
+            date_of_birth:
+              type: string
+              format: date
+              description: Date of birth in YYYY-MM-DD format.
+              example: '1980-01-01'
+            country_of_citizenship:
+              type: string
+              description: ISO country code for citizenship (format varies by country).
+              example: NGA
+            country_of_birth:
+              type: string
+              description: ISO country code for country of birth (format varies by country).
+              example: NGA
+            party_type:
+              type: string
+              enum:
+                - natural_person
+                - legal_entity
+              description: Type of party (individual or entity).
+              example: natural_person
+            tax_id_type:
+              type: string
+              enum:
+                - USA_SSN
+                - USA_EIN
+                - CAN_SIN
+                - GBR_NINO
+                - AUS_TFN
+              description: Type of tax identification number.
+              example: USA_SSN
+            country_of_tax_residence:
+              type: string
+              description: ISO country code for tax residence (format varies by country).
+              example: NGA
+            funding_source:
+              type: array
+              items:
+                type: string
+                enum:
+                  - employment_income
+                  - business_income
+                  - investment_income
+                  - inheritance
+                  - gift
+                  - other
+              description: Primary sources of funding for the account.
+              example:
+                - employment_income
+        disclosures:
+          type: object
+          properties:
+            is_control_person:
+              type: boolean
+              description: Whether the person is a control person of a public company.
+              example: false
+            is_affiliated_exchange_or_finra:
+              type: boolean
+              description: Whether affiliated with an exchange or FINRA member.
+              example: false
+            is_affiliated_exchange_or_iiroc:
+              type: boolean
+              nullable: true
+              description: Whether affiliated with an exchange or IIROC member.
+              example: null
+            is_politically_exposed:
+              type: boolean
+              description: Whether the person is politically exposed.
+              example: false
+            immediate_family_exposed:
+              type: boolean
+              description: Whether immediate family members are politically exposed.
+              example: false
+            is_discretionary:
+              type: boolean
+              description: Whether the account has discretionary trading authority.
+              example: false
+        agreements:
+          type: array
+          description: Legal agreements signed by the account holder.
+          items:
+            type: object
+            properties:
+              agreement:
+                type: string
+                enum:
+                  - account_agreement
+                  - customer_agreement
+                  - margin_agreement
+                  - options_agreement
+                  - privacy_policy
+                description: Type of agreement signed.
+                example: account_agreement
+              signed_at:
+                type: string
+                format: date-time
+                description: Timestamp when the agreement was signed.
+                example: '2025-10-17T18:00:00Z'
+              ip_address:
+                type: string
+                format: ipv4
+                description: IP address from which the agreement was signed.
+                example: 127.0.0.1
+              revision:
+                type: string
+                description: Version or revision of the agreement.
+                example: 16.2021.05
+              account_id:
+                type: string
+                format: uuid
+                description: Account ID associated with the agreement.
+                example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        account_type:
+          type: string
+          enum:
+            - trading
+            - individual
+            - joint
+            - ira
+            - corporate
+          description: The type of investment account.
+          example: trading
+        trading_type:
+          type: string
+          enum:
+            - margin
+            - cash
+          description: The type of trading account.
+          example: margin
+        trading_configurations:
+          type: object
+          nullable: true
+          description: Trading configuration settings.
+          example: null
+        enabled_assets:
+          type: array
+          items:
+            type: string
+            enum:
+              - us_equity
+              - us_option
+              - crypto
+              - bonds
+              - etf
+              - mutual_funds
+          description: Asset classes enabled for trading on this account.
+          example:
+            - us_equity
+    DocumentUploadRequest:
+      type: object
+      required:
+        - file
+        - document_type
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The binary content of the document file (e.g., PDF or JPG).
+        document_type:
+          type: string
+          enum:
+            - id_verification
+            - proof_of_address
+            - w9_form
+          description: The type of document being uploaded.
+    DocumentResponse:
+      type: object
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        upload_status:
+          type: string
+          enum:
+            - processing
+            - approved
+            - rejected
+        uploaded_at:
+          type: string
+          format: date-time
+    OrderRequest:
+      type: object
+      required:
+        - symbol
+        - qty
+        - side
+        - type
+        - time_in_force
+      properties:
+        symbol:
+          type: string
+          description: The ticker symbol of the asset (e.g., AAPL).
+          example: AAPL
+        qty:
+          type: string
+          description: Quantity of shares to trade.
+          example: '5'
+        side:
+          type: string
+          enum:
+            - buy
+            - sell
+          description: Whether to buy or sell the asset.
+          example: buy
+        type:
+          type: string
+          enum:
+            - market
+            - limit
+          description: Order type - market executes immediately at current price, limit sets a specific price.
+          example: limit
+        time_in_force:
+          type: string
+          enum:
+            - day
+            - gtc
+          description: How long the order remains active. 'day' expires at end of trading day, 'gtc' (Good Till Cancelled) remains active until filled or cancelled.
+          example: day
+        limit_price:
+          type: string
+          description: Price limit for limit orders (required when type is 'limit').
+          example: '175.00'
+        client_order_id:
+          type: string
+          description: Optional client-provided identifier for tracking the order.
+          example: limitorder123
+        commission:
+          type: string
+          description: Commission amount to charge (optional).
+          example: '1.00'
+        commission_type:
+          type: string
+          enum:
+            - notional
+            - qty
+            - bps
+          description: |
+            Commission calculation method:
+            - notional: Charge commission on a per order basis (default)
+            - qty: Charge commission on a per qty/contract basis, pro rated
+            - bps: Percent commission in basis points (up to 2 decimal places)
+          example: notional
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the order.
+          example: ord_x9y8z7a6b5c4d3e2
+        account_id:
+          type: string
+          format: uuid
+          description: Account ID associated with the order.
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        symbol:
+          type: string
+          description: The ticker symbol of the asset.
+          example: AAPL
+        qty:
+          type: string
+          description: Quantity of shares ordered.
+          example: '5'
+        side:
+          type: string
+          enum:
+            - buy
+            - sell
+          description: Whether to buy or sell the asset.
+          example: buy
+        type:
+          type: string
+          enum:
+            - market
+            - limit
+          description: Order type.
+          example: limit
+        time_in_force:
+          type: string
+          enum:
+            - day
+            - gtc
+          description: How long the order remains active.
+          example: day
+        limit_price:
+          type: string
+          description: Price limit for limit orders.
+          example: '175.00'
+        client_order_id:
+          type: string
+          description: Client-provided identifier for tracking the order.
+          example: limitorder123
+        status:
+          type: string
+          enum:
+            - accepted
+            - filled
+            - partially_filled
+            - canceled
+            - rejected
+          description: Current status of the order.
+          example: accepted
+        filled_qty:
+          type: string
+          description: Quantity of shares that have been filled.
+          example: '0'
+        remaining_qty:
+          type: string
+          description: Quantity of shares remaining to be filled.
+          example: '5'
+        average_price:
+          type: string
+          description: Average price at which shares have been filled.
+          example: '0.00'
+        commission:
+          type: string
+          description: Commission amount charged.
+          example: '1.00'
+        commission_type:
+          type: string
+          enum:
+            - notional
+            - qty
+            - bps
+          description: Commission calculation method used.
+          example: notional
+        submitted_at:
+          type: string
+          format: date-time
+          description: Timestamp when the order was submitted.
+          example: '2025-10-18T10:30:00Z'
+        filled_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the order was completely filled.
+          example: null
+        canceled_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the order was canceled.
+          example: null
+        reject_reason:
+          type: string
+          nullable: true
+          description: Reason for order rejection if applicable.
+          example: null
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 6c5b2403-24a9-4b55-a3dd-5cb1e4b50da6
+        class:
+          type: string
+          enum:
+            - us_equity
+            - crypto
+        exchange:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        tradable:
+          type: boolean
+        fractionable:
+          type: boolean
+    FundRequest:
+      type: object
+      required:
+        - amount
+        - funding_details
+      properties:
+        amount:
+          type: string
+          description: Amount to fund the account.
+          example: '5000.00'
+        funding_details:
+          oneOf:
+            - $ref: '#/components/schemas/FiatFundingDetails'
+            - $ref: '#/components/schemas/CryptoFundingDetails'
+        description:
+          type: string
+          description: Optional description for the funding transaction.
+          example: Initial account funding
+        external_reference_id:
+          type: string
+          description: Optional external reference ID for client tracking.
+          example: ref_12345
+    FiatFundingDetails:
+      type: object
+      required:
+        - funding_type
+        - fiat_currency
+        - bank_account_id
+        - method
+      properties:
+        funding_type:
+          type: string
+          enum:
+            - fiat
+          description: Type of funding - fiat currency.
+          example: fiat
+        fiat_currency:
+          type: string
+          enum:
+            - USD
+          description: Fiat currency for the funding.
+          example: USD
+        bank_account_id:
+          type: string
+          description: ID of the bank account used for funding.
+          example: bank_id_abc987
+        method:
+          type: string
+          enum:
+            - ach
+            - wire
+          description: Payment method for fiat funding.
+          example: ach
+    CryptoFundingDetails:
+      type: object
+      required:
+        - funding_type
+        - crypto_asset
+        - wallet_address
+        - network
+      properties:
+        funding_type:
+          type: string
+          enum:
+            - crypto
+          description: Type of funding - cryptocurrency.
+          example: crypto
+        crypto_asset:
+          type: string
+          enum:
+            - BTC
+            - ETH
+            - USDC
+            - USDT
+          description: Cryptocurrency asset for funding.
+          example: BTC
+        wallet_address:
+          type: string
+          description: Wallet address to send crypto from.
+          example: bc1qxy2k7732e73k23v20sghx98s5y4w
+        network:
+          type: string
+          enum:
+            - Bitcoin
+            - Ethereum
+            - Polygon
+          description: Blockchain network for the crypto transaction.
+          example: Bitcoin
+    Transaction:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the transaction.
+          example: txn_a1b2c3d4e5f6g7h8
+        account_id:
+          type: string
+          format: uuid
+          description: Account ID associated with the transaction.
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        type:
+          type: string
+          enum:
+            - deposit
+            - withdrawal
+          description: Type of transaction.
+          example: deposit
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - settled
+            - failed
+            - canceled
+          description: Current status of the transaction.
+          example: pending
+        amount:
+          type: string
+          description: Transaction amount.
+          example: '5000.00'
+        currency:
+          type: string
+          description: Currency of the transaction.
+          example: USD
+        funding_type:
+          type: string
+          enum:
+            - fiat
+            - crypto
+          description: Type of funding used.
+          example: fiat
+        funding_details:
+          type: object
+          description: Details of the funding method used.
+        description:
+          type: string
+          description: Description of the transaction.
+          example: Initial account funding
+        external_reference_id:
+          type: string
+          description: External reference ID for client tracking.
+          example: ref_12345
+        fee:
+          type: string
+          description: Fee charged for the transaction.
+          example: '0.00'
+        net_amount:
+          type: string
+          description: Net amount after fees.
+          example: '5000.00'
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the transaction was created.
+          example: '2025-10-18T10:30:00Z'
+        settled_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the transaction was settled.
+          example: null
+        failed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the transaction failed.
+          example: null
+        failure_reason:
+          type: string
+          nullable: true
+          description: Reason for transaction failure if applicable.
+          example: null
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A custom error code for troubleshooting.
+          example: BLUM-400-001
+        message:
+          type: string
+          description: Human-readable error message.
+          example: Invalid quantity. Must be a positive integer.
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: BLUM-401-001
+            message: Missing or invalid Authorization header.
+    BadRequestError:
+      description: The request was malformed or failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: BLUM-400-002
+            message: Required field 'symbol' is missing.
+    NotFoundError:
+      description: The requested resource could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: BLUM-404-001
+            message: Account with ID acc_a1b2c3d4e5f6g7h8 not found.
