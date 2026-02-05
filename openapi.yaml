@@ -2,23 +2,28 @@ openapi: 3.0.0
 info:
   title: Bluum Finance Investment API
   version: 1.0.0
-  description: |
-    The Bluum Finance API provides embeddable investment experiences, allowing Fintechs to manage client accounts, facilitate trading, handle document uploads, and manage wallet operations.
+  description: 'The Bluum Finance API provides embeddable investment experiences, allowing Fintechs to manage client accounts,
+    facilitate trading, handle document uploads, and manage wallet operations.
+
 
     ### Authentication
-    This API uses **HTTP Basic Authentication** where the **API Key** is used as the username and the **API Secret** is used as the password. The client must Base64 encode the string `API_KEY:API_SECRET` and send it in the `Authorization` header.
+
+    This API uses **HTTP Basic Authentication** where the **API Key** is used as the username and the **API Secret** is used
+    as the password. The client must Base64 encode the string `API_KEY:API_SECRET` and send it in the `Authorization` header.
+
+    '
 servers:
-  - url: https://api.bluum.finance/v1
-    description: Production Environment
-  - url: https://sandbox.api.bluum.finance/v1
-    description: Sandbox/Testing Environment
+- url: https://api.bluumfinance.com/v1
+  description: Production Environment
+- url: https://sandbox.api.bluumfinance.com/v1
+  description: Sandbox/Testing Environment
 security:
-  - BluumBasicAuth: []
+- BluumApiKeyAuth: []
 paths:
   /accounts:
     get:
       tags:
-        - Accounts
+      - Accounts
       summary: List all user accounts
       operationId: listAccounts
       responses:
@@ -30,11 +35,54 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Account'
+              examples:
+                success:
+                  summary: List of accounts
+                  value:
+                  - id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    account_number: '968430933'
+                    status: ACTIVE
+                    crypto_status: INACTIVE
+                    currency: USD
+                    balance: '1000.00'
+                    last_equity: '0'
+                    created_at: '2025-10-18T01:08:46.263583Z'
+                    account_type: trading
+                    trading_type: cash
+                    enabled_assets:
+                    - us_equity
+                    contact:
+                      email_address: john.doe@example.com
+                      phone_number: '+15555555555'
+                      street_address:
+                      - 123 Main St
+                      city: Berkeley
+                      state: CA
+                      postal_code: '94704'
+                      country: USA
+                    identity:
+                      first_name: John
+                      last_name: Doe
+                      date_of_birth: '1980-01-01'
+                      country_of_citizenship: USA
+                      country_of_birth: USA
+                      party_type: natural_person
+                      tax_id_type: SSN
+                      country_of_tax_residence: USA
+                      funding_source:
+                      - employment_income
+                    disclosures:
+                      is_control_person: false
+                      is_affiliated_exchange_or_finra: false
+                      is_politically_exposed: false
+                      immediate_family_exposed: false
+                      is_discretionary: false
+                    agreements: []
         '401':
           $ref: '#/components/responses/UnauthorizedError'
     post:
       tags:
-        - Accounts
+      - Accounts
       summary: Create a new investment account
       operationId: createAccount
       requestBody:
@@ -43,6 +91,81 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/NewAccountRequest'
+            examples:
+              trading_account:
+                summary: Create a trading account
+                value:
+                  account_type: trading
+                  contact:
+                    email_address: john.doe@example.com
+                    phone_number: '+15555555555'
+                    street_address:
+                    - 123 Main St
+                    - Apt 4B
+                    city: Berkeley
+                    state: CA
+                    postal_code: '94704'
+                    country: US
+                  identity:
+                    first_name: John
+                    last_name: Doe
+                    date_of_birth: '1980-01-01'
+                    tax_id: 123-45-6789
+                    tax_id_type: SSN
+                    country_of_citizenship: US
+                    country_of_birth: US
+                    country_of_tax_residence: US
+                    funding_source:
+                    - employment_income
+                  disclosures:
+                    is_control_person: false
+                    is_affiliated_exchange_or_finra: false
+                    is_politically_exposed: false
+                    immediate_family_exposed: false
+                  agreements:
+                  - agreement: account_agreement
+                    agreed: true
+                    signed_at: '2025-01-15T10:30:00Z'
+                    ip_address: 192.168.1.1
+              individual_account:
+                summary: Create an individual account
+                value:
+                  account_type: individual
+                  contact:
+                    email_address: jane.smith@example.com
+                    phone_number: '+14155551234'
+                    street_address:
+                    - 456 Oak Avenue
+                    city: San Francisco
+                    state: CA
+                    postal_code: '94102'
+                    country: US
+                  identity:
+                    first_name: Jane
+                    last_name: Smith
+                    date_of_birth: '1990-05-15'
+                    tax_id: 987-65-4321
+                    tax_id_type: SSN
+                    country_of_citizenship: US
+                    country_of_birth: US
+                    country_of_tax_residence: US
+                    funding_source:
+                    - investment_income
+                    - business_income
+                  disclosures:
+                    is_control_person: false
+                    is_affiliated_exchange_or_finra: false
+                    is_politically_exposed: false
+                    immediate_family_exposed: false
+                  agreements:
+                  - agreement: account_agreement
+                    agreed: true
+                    signed_at: '2025-01-15T10:30:00Z'
+                    ip_address: 192.168.1.1
+                  - agreement: customer_agreement
+                    agreed: true
+                    signed_at: '2025-01-15T10:30:00Z'
+                    ip_address: 192.168.1.1
       responses:
         '201':
           description: Account successfully created and is pending approval
@@ -50,22 +173,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
+              examples:
+                created:
+                  summary: Newly created account
+                  value:
+                    id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    account_number: null
+                    status: ACTIVE
+                    crypto_status: null
+                    currency: USD
+                    balance: '0.00'
+                    last_equity: '0'
+                    created_at: '2025-01-15T10:30:00Z'
+                    account_type: trading
+                    trading_type: null
+                    enabled_assets:
+                    - us_equity
+                    contact:
+                      email_address: john.doe@example.com
+                      phone_number: '+15555555555'
+                      street_address:
+                      - 123 Main St
+                      - Apt 4B
+                      city: Berkeley
+                      state: CA
+                      postal_code: '94704'
+                      country: USA
+                    identity:
+                      first_name: John
+                      last_name: Doe
+                      date_of_birth: '1980-01-01'
+                      country_of_citizenship: USA
+                      country_of_birth: USA
+                      party_type: natural_person
+                      tax_id_type: SSN
+                      country_of_tax_residence: USA
+                      funding_source:
+                      - employment_income
+                    disclosures:
+                      is_control_person: false
+                      is_affiliated_exchange_or_finra: false
+                      is_affiliated_exchange_or_iiroc: null
+                      is_politically_exposed: false
+                      immediate_family_exposed: false
+                      is_discretionary: false
+                    agreements:
+                    - agreement: account_agreement
+                      signed_at: '2025-01-15T10:30:00Z'
+                      ip_address: 192.168.1.1
+                      revision: null
+                      account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
         '400':
           $ref: '#/components/responses/BadRequestError'
   /accounts/{account_id}:
     get:
       tags:
-        - Accounts
+      - Accounts
       summary: Retrieve a specific account
       operationId: getAccount
       parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: acc_a1b2c3d4e5f6g7h8
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: acc_a1b2c3d4e5f6g7h8
       responses:
         '200':
           description: Account details retrieved successfully
@@ -73,22 +246,386 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
+              examples:
+                active_account:
+                  summary: Active account with balance
+                  value:
+                    id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    account_number: '968430933'
+                    status: ACTIVE
+                    crypto_status: INACTIVE
+                    currency: USD
+                    balance: '1000.00'
+                    last_equity: '5000.00'
+                    created_at: '2025-10-18T01:08:46.263583Z'
+                    account_type: trading
+                    trading_type: cash
+                    enabled_assets:
+                    - us_equity
+                    contact:
+                      email_address: john.doe@example.com
+                      phone_number: '+15555555555'
+                      street_address:
+                      - 123 Main St
+                      city: Berkeley
+                      state: CA
+                      postal_code: '94704'
+                      country: USA
+                    identity:
+                      first_name: John
+                      last_name: Doe
+                      date_of_birth: '1980-01-01'
+                      country_of_citizenship: USA
+                      country_of_birth: USA
+                      party_type: natural_person
+                      tax_id_type: SSN
+                      country_of_tax_residence: USA
+                      funding_source:
+                      - employment_income
+                    disclosures:
+                      is_control_person: false
+                      is_affiliated_exchange_or_finra: false
+                      is_affiliated_exchange_or_iiroc: null
+                      is_politically_exposed: false
+                      immediate_family_exposed: false
+                      is_discretionary: false
+                    agreements:
+                    - agreement: account_agreement
+                      signed_at: '2025-10-17T18:00:00Z'
+                      ip_address: 127.0.0.1
+                      revision: 16.2021.05
+                      account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /accounts/{account_id}/wallets:
+    get:
+      tags:
+      - Accounts
+      summary: List all wallets for an account
+      description: 'Retrieve all wallets (currency accounts) for a specific investor account.
+
+        Each wallet holds a balance for a specific currency.
+
+        '
+      operationId: getAccountWallets
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The unique identifier of the account
+      responses:
+        '200':
+          description: List of wallets for the account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wallets:
+                    type: array
+                    items:
+                      type: object
+                      description: A wallet holds a balance for a specific currency within an investor account.
+                      properties:
+                        wallet_id:
+                          type: string
+                          format: uuid
+                          description: Unique identifier for the wallet.
+                          example: w_a1b2c3d4e5f6
+                        currency:
+                          type: string
+                          minLength: 3
+                          maxLength: 3
+                          description: ISO 4217 currency code.
+                          example: USD
+                        balance:
+                          type: string
+                          description: Total balance (available + reserved).
+                          example: '1500.00'
+                        available_balance:
+                          type: string
+                          description: Balance available for trading/withdrawals.
+                          example: '1200.00'
+                        reserved_balance:
+                          type: string
+                          description: Balance reserved for pending orders.
+                          example: '300.00'
+                        status:
+                          type: string
+                          enum:
+                          - active
+                          - suspended
+                          - closed
+                          description: Current status of the wallet.
+                          example: active
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the wallet was created.
+                          example: '2025-01-15T10:30:00Z'
+                      required:
+                      - wallet_id
+                      - currency
+                      - balance
+                      - available_balance
+                      - reserved_balance
+                      - status
+                      - created_at
+              examples:
+                multi_wallet:
+                  summary: Account with multiple wallets
+                  value:
+                    wallets:
+                    - wallet_id: w_a1b2c3d4e5f6
+                      currency: USD
+                      balance: '1500.00'
+                      available_balance: '1200.00'
+                      reserved_balance: '300.00'
+                      status: active
+                      created_at: '2025-01-15T10:30:00Z'
+                    - wallet_id: w_b2c3d4e5f6g7
+                      currency: EUR
+                      balance: '500.00'
+                      available_balance: '500.00'
+                      reserved_balance: '0.00'
+                      status: active
+                      created_at: '2025-01-20T14:00:00Z'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /accounts/{account_id}/transactions:
+    get:
+      tags:
+      - Accounts
+      summary: List transactions for an account
+      description: "Retrieve a unified list of all money movement transactions (deposits and withdrawals) \nfor an account.\
+        \ Supports filtering by type, status, currency, and date range.\n"
+      operationId: listAccountTransactions
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The unique identifier of the account
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - deposit
+          - withdrawal
+        description: Filter transactions by type
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - processing
+          - received
+          - completed
+          - submitted
+          - expired
+          - canceled
+          - failed
+        description: Filter transactions by status
+      - name: currency
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+        description: Filter transactions by currency (3-letter ISO code)
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: Filter transactions from this date (YYYY-MM-DD)
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: Filter transactions to this date (YYYY-MM-DD)
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+        description: Maximum number of transactions to return
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Number of transactions to skip for pagination
+      responses:
+        '200':
+          description: List of transactions for the account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      description: Unified transaction object representing a deposit or withdrawal.
+                      properties:
+                        transaction_id:
+                          type: string
+                          format: uuid
+                          description: Unique identifier for the transaction.
+                          example: dep_a1b2c3d4e5f6
+                        account_id:
+                          type: string
+                          format: uuid
+                          description: Account ID associated with the transaction.
+                          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                        wallet_id:
+                          type: string
+                          format: uuid
+                          description: Wallet ID associated with the transaction.
+                          example: w_a1b2c3d4e5f6
+                        type:
+                          type: string
+                          enum:
+                          - deposit
+                          - withdrawal
+                          description: Type of transaction.
+                          example: deposit
+                        status:
+                          type: string
+                          enum:
+                          - pending
+                          - processing
+                          - received
+                          - completed
+                          - submitted
+                          - expired
+                          - canceled
+                          - failed
+                          description: Current status of the transaction.
+                          example: completed
+                        amount:
+                          type: string
+                          description: Transaction amount.
+                          example: '5000.00'
+                        currency:
+                          type: string
+                          minLength: 3
+                          maxLength: 3
+                          description: Currency of the transaction.
+                          example: USD
+                        method:
+                          type: string
+                          description: Transfer method used.
+                          example: ach_plaid
+                        description:
+                          type: string
+                          nullable: true
+                          description: Description of the transaction.
+                          example: Initial account funding
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the transaction was created.
+                          example: '2025-01-15T10:30:00Z'
+                        completed_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: Timestamp when the transaction was completed.
+                          example: '2025-01-16T14:20:00Z'
+                        failed_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: Timestamp when the transaction failed.
+                          example: null
+                        failure_reason:
+                          type: string
+                          nullable: true
+                          description: Reason for transaction failure if applicable.
+                          example: null
+                      required:
+                      - transaction_id
+                      - account_id
+                      - wallet_id
+                      - type
+                      - status
+                      - amount
+                      - currency
+                      - method
+                      - created_at
+              examples:
+                transaction_list:
+                  summary: List of transactions
+                  value:
+                    transactions:
+                    - transaction_id: dep_a1b2c3d4e5f6
+                      account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                      wallet_id: w_a1b2c3d4e5f6
+                      type: deposit
+                      status: completed
+                      amount: '5000.00'
+                      currency: USD
+                      method: ach_plaid
+                      description: Initial account funding
+                      created_at: '2025-01-15T10:30:00Z'
+                      completed_at: '2025-01-16T14:20:00Z'
+                      failed_at: null
+                      failure_reason: null
+                    - transaction_id: wd_b2c3d4e5f6g7
+                      account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                      wallet_id: w_a1b2c3d4e5f6
+                      type: withdrawal
+                      status: pending
+                      amount: '1000.00'
+                      currency: USD
+                      method: ach_plaid
+                      description: Withdrawal to bank account
+                      created_at: '2025-01-17T09:15:00Z'
+                      completed_at: null
+                      failed_at: null
+                      failure_reason: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
   /documents/accounts/{account_id}/upload:
     post:
       tags:
-        - Document Management
+      - Document Management
       summary: Upload a document for an account
       operationId: uploadDocument
       parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
       requestBody:
         required: true
         content:
@@ -102,41 +639,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentResponse'
+              examples:
+                uploaded_document:
+                  summary: Document uploaded successfully
+                  value:
+                    document_id: doc_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    document_type: id_verification
+                    upload_status: processing
+                    uploaded_at: '2025-01-15T10:30:00Z'
         '400':
           $ref: '#/components/responses/BadRequestError'
     get:
       tags:
-        - Document Management
+      - Document Management
       summary: List documents for an account
       operationId: listDocuments
       parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
-        - name: document_type
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - id_verification
-              - proof_of_address
-              - w9_form
-            description: Filter documents by type.
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - processing
-              - approved
-              - rejected
-            description: Filter documents by status.
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: document_type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - id_verification
+          - proof_of_address
+          - w9_form
+          description: Filter documents by type.
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - processing
+          - approved
+          - rejected
+          description: Filter documents by status.
       responses:
         '200':
           description: List of documents for the account
@@ -146,6 +692,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DocumentResponse'
+              examples:
+                document_list:
+                  summary: List of documents
+                  value:
+                  - document_id: doc_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    document_type: id_verification
+                    upload_status: approved
+                    uploaded_at: '2025-01-10T09:00:00Z'
+                  - document_id: doc_b2c3d4e5f6g7h8i9
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    document_type: proof_of_address
+                    upload_status: processing
+                    uploaded_at: '2025-01-15T10:30:00Z'
+                  - document_id: doc_c3d4e5f6g7h8i9j0
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    document_type: w9_form
+                    upload_status: approved
+                    uploaded_at: '2025-01-12T14:20:00Z'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -153,17 +718,17 @@ paths:
   /documents/{document_id}:
     get:
       tags:
-        - Document Management
+      - Document Management
       summary: Retrieve a specific document
       operationId: getDocument
       parameters:
-        - name: document_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: doc_a1b2c3d4e5f6g7h8
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: doc_a1b2c3d4e5f6g7h8
       responses:
         '200':
           description: Document details retrieved successfully
@@ -171,21 +736,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentResponse'
+              examples:
+                approved_document:
+                  summary: Approved document
+                  value:
+                    document_id: doc_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    document_type: id_verification
+                    upload_status: approved
+                    uploaded_at: '2025-01-10T09:00:00Z'
         '404':
           $ref: '#/components/responses/NotFoundError'
     delete:
       tags:
-        - Document Management
+      - Document Management
       summary: Delete a document
       operationId: deleteDocument
       parameters:
-        - name: document_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: doc_a1b2c3d4e5f6g7h8
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: doc_a1b2c3d4e5f6g7h8
       responses:
         '204':
           description: Document deleted successfully
@@ -194,23 +768,73 @@ paths:
   /trading/accounts/{account_id}/orders:
     post:
       tags:
-        - Trading
+      - Trading
       summary: Place a new investment order
       operationId: createOrder
       parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/OrderRequest'
+            examples:
+              market_buy:
+                summary: Market buy order with quantity
+                value:
+                  symbol: AAPL
+                  side: buy
+                  type: market
+                  time_in_force: day
+                  qty: '10'
+                  extended_hours: false
+              limit_buy:
+                summary: Limit buy order
+                value:
+                  symbol: MSFT
+                  side: buy
+                  type: limit
+                  time_in_force: gtc
+                  qty: '5'
+                  limit_price: '350.00'
+                  extended_hours: false
+                  client_order_id: my-order-123
+              notional_buy:
+                summary: Market buy order with dollar amount
+                value:
+                  symbol: GOOGL
+                  side: buy
+                  type: market
+                  time_in_force: day
+                  notional: '1000.00'
+                  extended_hours: false
+              stop_loss:
+                summary: Stop loss order
+                value:
+                  symbol: TSLA
+                  side: sell
+                  type: stop
+                  time_in_force: gtc
+                  qty: '20'
+                  stop_price: '200.00'
+                  extended_hours: false
+              trailing_stop:
+                summary: Trailing stop order
+                value:
+                  symbol: NVDA
+                  side: sell
+                  type: trailing_stop
+                  time_in_force: gtc
+                  qty: '15'
+                  trail_percent: '5.0'
+                  extended_hours: false
       responses:
         '201':
           description: Order accepted by the system
@@ -218,65 +842,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+              examples:
+                accepted_order:
+                  summary: Order accepted
+                  value:
+                    id: ord_x9y8z7a6b5c4d3e2
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: AAPL
+                    qty: '10'
+                    side: buy
+                    type: market
+                    time_in_force: day
+                    extended_hours: false
+                    status: accepted
+                    filled_qty: '0'
+                    remaining_qty: '10'
+                    average_price: '0.00'
+                    submitted_at: '2025-01-15T14:30:00Z'
+                    filled_at: null
+                    canceled_at: null
+                    reject_reason: null
+                filled_order:
+                  summary: Order filled
+                  value:
+                    id: ord_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: MSFT
+                    qty: '5'
+                    side: buy
+                    type: limit
+                    time_in_force: gtc
+                    limit_price: '350.00'
+                    extended_hours: false
+                    client_order_id: my-order-123
+                    status: filled
+                    filled_qty: '5'
+                    remaining_qty: '0'
+                    average_price: '349.95'
+                    commission: '1.00'
+                    commission_type: notional
+                    submitted_at: '2025-01-15T10:00:00Z'
+                    filled_at: '2025-01-15T10:05:30Z'
+                    canceled_at: null
+                    reject_reason: null
         '400':
           $ref: '#/components/responses/BadRequestError'
     get:
       tags:
-        - Trading
+      - Trading
       summary: List orders for an account
       operationId: listOrders
       parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - accepted
-              - filled
-              - partially_filled
-              - canceled
-              - rejected
-            description: Filter orders by status.
-        - name: symbol
-          in: query
-          required: false
-          schema:
-            type: string
-            description: Filter orders by symbol.
-        - name: side
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - buy
-              - sell
-            description: Filter orders by side.
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 50
-            description: Maximum number of orders to return.
-        - name: offset
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-            description: Number of orders to skip for pagination.
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - accepted
+          - filled
+          - partially_filled
+          - canceled
+          - rejected
+          description: Filter orders by status.
+      - name: symbol
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Filter orders by symbol.
+      - name: side
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - buy
+          - sell
+          description: Filter orders by side.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+          description: Maximum number of orders to return.
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Number of orders to skip for pagination.
       responses:
         '200':
           description: List of orders for the account
@@ -286,6 +953,41 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Order'
+              examples:
+                multiple_orders:
+                  summary: List of orders
+                  value:
+                  - id: ord_x9y8z7a6b5c4d3e2
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: AAPL
+                    qty: '10'
+                    side: buy
+                    type: market
+                    time_in_force: day
+                    status: filled
+                    filled_qty: '10'
+                    remaining_qty: '0'
+                    average_price: '175.50'
+                    submitted_at: '2025-01-15T14:30:00Z'
+                    filled_at: '2025-01-15T14:30:15Z'
+                    canceled_at: null
+                    reject_reason: null
+                  - id: ord_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: MSFT
+                    qty: '5'
+                    side: buy
+                    type: limit
+                    time_in_force: gtc
+                    limit_price: '350.00'
+                    status: accepted
+                    filled_qty: '0'
+                    remaining_qty: '5'
+                    average_price: '0.00'
+                    submitted_at: '2025-01-15T15:00:00Z'
+                    filled_at: null
+                    canceled_at: null
+                    reject_reason: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -293,17 +995,17 @@ paths:
   /trading/orders/{order_id}:
     get:
       tags:
-        - Trading
+      - Trading
       summary: Retrieve a specific trade order
       operationId: getOrder
       parameters:
-        - name: order_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: ord_x9y8z7a6b5c4d3e2
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: ord_x9y8z7a6b5c4d3e2
       responses:
         '200':
           description: Order details retrieved successfully
@@ -311,168 +1013,407 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+              examples:
+                filled_order:
+                  summary: Filled order details
+                  value:
+                    id: ord_x9y8z7a6b5c4d3e2
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: AAPL
+                    qty: '10'
+                    side: buy
+                    type: market
+                    time_in_force: day
+                    extended_hours: false
+                    status: filled
+                    filled_qty: '10'
+                    remaining_qty: '0'
+                    average_price: '175.50'
+                    commission: '1.00'
+                    commission_type: notional
+                    submitted_at: '2025-01-15T14:30:00Z'
+                    filled_at: '2025-01-15T14:30:15Z'
+                    canceled_at: null
+                    reject_reason: null
+                partially_filled:
+                  summary: Partially filled order
+                  value:
+                    id: ord_b2c3d4e5f6g7h8i9
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: TSLA
+                    qty: '100'
+                    side: sell
+                    type: limit
+                    time_in_force: day
+                    limit_price: '250.00'
+                    status: partially_filled
+                    filled_qty: '45'
+                    remaining_qty: '55'
+                    average_price: '249.95'
+                    submitted_at: '2025-01-15T09:00:00Z'
+                    filled_at: null
+                    canceled_at: null
+                    reject_reason: null
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /wallet/accounts/{account_id}/funding:
-    post:
-      tags:
-        - Wallet
-      summary: Fund an investment account (deposit)
-      operationId: fundAccount
-      parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FundRequest'
-      responses:
-        '202':
-          description: Deposit request accepted and is pending processing
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Transaction'
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-  /wallet/accounts/{account_id}/transactions:
+  /trading/accounts/{account_id}/positions:
     get:
       tags:
-        - Wallet
-      summary: List transactions for an account
-      operationId: listTransactions
+      - Positions
+      summary: List positions for an account
+      operationId: listPositions
       parameters:
-        - name: account_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
-        - name: type
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - deposit
-              - withdrawal
-            description: Filter transactions by type.
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - pending
-              - processing
-              - settled
-              - failed
-              - canceled
-            description: Filter transactions by status.
-        - name: funding_type
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - fiat
-              - crypto
-            description: Filter transactions by funding type.
-        - name: date_from
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-            description: Filter transactions from this date (YYYY-MM-DD).
-        - name: date_to
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-            description: Filter transactions to this date (YYYY-MM-DD).
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 50
-            description: Maximum number of transactions to return.
-        - name: offset
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-            description: Number of transactions to skip for pagination.
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: symbol
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Filter positions by symbol.
+      - name: non_zero_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          description: Only return positions with non-zero quantity.
+      - name: refresh_prices
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          description: 'When true, fetches live prices from market data providers.
+
+            Response will include price_source, price_confidence, and price_timestamp fields.
+
+            Note: This adds latency as it fetches real-time data.
+
+            '
       responses:
         '200':
-          description: List of transactions for the account
+          description: List of positions for the account
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Transaction'
+                  $ref: '#/paths/~1trading~1accounts~1%7Baccount_id%7D~1positions~1%7Bposition_id%7D/get/responses/200/content/application~1json/schema'
+              examples:
+                multiple_positions:
+                  summary: List of positions
+                  value:
+                  - id: pos_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: AAPL
+                    asset_id: 6c5b2403-24a9-4b55-a3dd-5cb1e4b50da6
+                    quantity: '10.5'
+                    average_cost_basis: '175.50'
+                    total_cost_basis: '1842.75'
+                    current_price: '180.00'
+                    market_value: '1890.00'
+                    unrealized_pl: '47.25'
+                    unrealized_pl_percent: '2.56'
+                    last_transaction_at: '2025-01-15T14:30:15Z'
+                    created_at: '2025-01-10T10:00:00Z'
+                    updated_at: '2025-01-15T14:30:15Z'
+                  - id: pos_b2c3d4e5f6g7h8i9
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: MSFT
+                    asset_id: 7d6c3514-35ba-5c66-b4ee-6dc2f5c61eb7
+                    quantity: '5.0'
+                    average_cost_basis: '350.00'
+                    total_cost_basis: '1750.00'
+                    current_price: '365.50'
+                    market_value: '1827.50'
+                    unrealized_pl: '77.50'
+                    unrealized_pl_percent: '4.43'
+                    last_transaction_at: '2025-01-12T11:20:00Z'
+                    created_at: '2025-01-08T09:00:00Z'
+                    updated_at: '2025-01-15T16:00:00Z'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /wallet/withdrawals:
-    post:
+  /trading/accounts/{account_id}/positions/{position_id}:
+    get:
       tags:
-        - Wallet
-      summary: Withdraw funds from an investment account
-      operationId: withdrawFunds
-      requestBody:
+      - Positions
+      summary: Retrieve a specific position
+      operationId: getPosition
+      parameters:
+      - name: account_id
+        in: path
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FundRequest'
+        schema:
+          type: string
+          format: uuid
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: position_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: pos_a1b2c3d4e5f6g7h8
+      - name: refresh_prices
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          description: 'When true, fetches live price from market data providers.
+
+            Response will include price_source, price_confidence, and price_timestamp fields.
+
+            '
       responses:
-        '202':
-          description: Withdrawal request accepted and is pending processing
+        '200':
+          description: Position details retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Transaction'
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-  /assets:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the position.
+                    example: pos_a1b2c3d4e5f6g7h8
+                  account_id:
+                    type: string
+                    format: uuid
+                    description: Account ID associated with the position.
+                    example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                  symbol:
+                    type: string
+                    description: The ticker symbol of the asset.
+                    example: AAPL
+                  asset_id:
+                    type: string
+                    format: uuid
+                    description: Asset ID.
+                    example: 6c5b2403-24a9-4b55-a3dd-5cb1e4b50da6
+                  quantity:
+                    type: string
+                    description: Current quantity owned (can be negative for shorts).
+                    example: '10.5'
+                  average_cost_basis:
+                    type: string
+                    description: Average cost per unit.
+                    example: '175.50'
+                  total_cost_basis:
+                    type: string
+                    description: Total cost basis (quantity * average_cost_basis).
+                    example: '1842.75'
+                  current_price:
+                    type: string
+                    description: Current market price.
+                    example: '180.00'
+                  market_value:
+                    type: string
+                    description: Current market value (quantity * current_price).
+                    example: '1890.00'
+                  unrealized_pl:
+                    type: string
+                    description: Unrealized profit/loss (market_value - total_cost_basis).
+                    example: '47.25'
+                  unrealized_pl_percent:
+                    type: string
+                    description: Unrealized P/L as percentage.
+                    example: '2.56'
+                  price_source:
+                    type: string
+                    description: Source of the price data. Present when refresh_prices=true.
+                    enum:
+                    - ALPACA
+                    - NAYA
+                    - DATABASE
+                    - UNAVAILABLE
+                    example: ALPACA
+                  price_confidence:
+                    type: string
+                    description: Confidence level of the price data. Present when refresh_prices=true.
+                    enum:
+                    - REAL_TIME
+                    - DELAYED
+                    - END_OF_DAY
+                    - STALE
+                    - UNAVAILABLE
+                    example: REAL_TIME
+                  price_timestamp:
+                    type: string
+                    format: date-time
+                    description: When the price was recorded by the source. Present when refresh_prices=true.
+                    example: '2025-10-18T10:30:00Z'
+                  last_transaction_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Timestamp of last transaction.
+                    example: '2025-10-18T10:30:00Z'
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the position was created.
+                    example: '2025-10-18T10:30:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the position was last updated.
+                    example: '2025-10-18T10:30:00Z'
+              examples:
+                single_position:
+                  summary: Position details
+                  value:
+                    id: pos_a1b2c3d4e5f6g7h8
+                    account_id: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+                    symbol: AAPL
+                    asset_id: 6c5b2403-24a9-4b55-a3dd-5cb1e4b50da6
+                    quantity: '10.5'
+                    average_cost_basis: '175.50'
+                    total_cost_basis: '1842.75'
+                    current_price: '180.00'
+                    market_value: '1890.00'
+                    unrealized_pl: '47.25'
+                    unrealized_pl_percent: '2.56'
+                    last_transaction_at: '2025-01-15T14:30:15Z'
+                    created_at: '2025-01-10T10:00:00Z'
+                    updated_at: '2025-01-15T14:30:15Z'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /assets/search:
     get:
       tags:
-        - Assets
-      summary: Retrieve a list of tradable assets
+      - Assets
+      summary: Search for assets by ticker, name, or partial match
+      operationId: searchAssets
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search query (ticker, name, or partial match). If not provided, returns all assets up to the limit.
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - active
+          - inactive
+          default: active
+        description: Filter by asset status. Defaults to 'active'.
+      - name: asset_class
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - us_equity
+          - crypto
+          - us_option
+        description: Filter by asset class.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+        description: Maximum number of results to return. Defaults to 50, maximum is 100.
+      responses:
+        '200':
+          description: List of matching assets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AssetSearchResult'
+                  count:
+                    type: integer
+                    description: Number of results returned
+              examples:
+                search_results:
+                  summary: Search results for AAPL
+                  value:
+                    data:
+                    - id: b0b6dd9d-8b9b-48b9-bbb8-bbbb49bb1bbb
+                      class: us_equity
+                      market: NASDAQ
+                      symbol: AAPL
+                      name: Apple Inc.
+                      status: active
+                      tradable: true
+                      marginable: true
+                      shortable: true
+                      easy_to_borrow: true
+                      fractionable: true
+                      currency: USD
+                    - id: c1c7ee0e-9c0c-59c0-ccc9-cccc5acc2ccc
+                      class: us_equity
+                      market: NYSE
+                      symbol: AAPL
+                      name: Apple Inc. Class A
+                      status: active
+                      tradable: true
+                      marginable: true
+                      shortable: true
+                      easy_to_borrow: true
+                      fractionable: true
+                      currency: USD
+                    count: 2
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /assets/list:
+    get:
+      tags:
+      - Assets
+      summary: List all assets with optional filtering
       operationId: listAssets
       parameters:
-        - name: asset_class
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - us_equity
-              - crypto
-            description: Filter by asset class.
-        - name: tradable
-          in: query
-          required: false
-          schema:
-            type: boolean
-            description: Filter for assets that are currently tradable.
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - active
+          - inactive
+          default: active
+        description: Filter by asset status. Defaults to 'active'.
+      - name: asset_class
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - us_equity
+          - crypto
+          - us_option
+        description: Filter by asset class.
+      - name: tradable
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Filter for assets that are currently tradable.
       responses:
         '200':
           description: List of assets
@@ -481,44 +1422,1262 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Asset'
+                  $ref: '#/components/schemas/AssetSearchResult'
+              examples:
+                asset_list:
+                  summary: List of active US equity assets
+                  value:
+                  - id: b0b6dd9d-8b9b-48b9-bbb8-bbbb49bb1bbb
+                    class: us_equity
+                    market: NASDAQ
+                    symbol: AAPL
+                    name: Apple Inc.
+                    status: active
+                    tradable: true
+                    marginable: true
+                    shortable: true
+                    easy_to_borrow: true
+                    fractionable: true
+                    currency: USD
+                  - id: d2d8ff1f-ad1d-6ad1-ddd0-dddd6bdd3ddd
+                    class: us_equity
+                    market: NASDAQ
+                    symbol: MSFT
+                    name: Microsoft Corporation
+                    status: active
+                    tradable: true
+                    marginable: true
+                    shortable: true
+                    easy_to_borrow: true
+                    fractionable: true
+                    currency: USD
+                  - id: e3e9gg2g-be2e-7be2-eee1-eeee7cee4eee
+                    class: us_equity
+                    market: NYSE
+                    symbol: GOOGL
+                    name: Alphabet Inc. Class A
+                    status: active
+                    tradable: true
+                    marginable: true
+                    shortable: true
+                    easy_to_borrow: true
+                    fractionable: true
+                    currency: USD
+        '400':
+          $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /assets/chart:
+    get:
+      tags:
+      - Assets
+      summary: Get historical chart/bar data for an asset
+      operationId: getChart
+      parameters:
+      - name: symbol
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Asset ticker symbol (e.g., AAPL, MSFT, BTCUSD)
+        example: AAPL
+      - name: timeframe
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - 1Min
+          - 5Min
+          - 15Min
+          - 30Min
+          - 1Hour
+          - 1Day
+          - 1Week
+          - 1Month
+        description: Bar timeframe
+        example: 1Day
+      - name: start
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Start date/time (ISO 8601 format). If not provided, returns most recent bars up to limit.
+        example: '2025-01-01T00:00:00Z'
+      - name: end
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: End date/time (ISO 8601 format). If not provided, uses current time.
+        example: '2025-01-31T23:59:59Z'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 100
+        description: Maximum number of bars to return. Defaults to 100, maximum is 10000.
+      - name: adjustment
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - raw
+          - split
+          - dividend
+          - all
+          default: raw
+        description: Corporate action adjustment. 'raw' = no adjustment, 'split' = split adjusted, 'dividend' = dividend adjusted,
+          'all' = both adjusted.
+      - name: feed
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - iex
+          - sip
+          - otc
+          default: iex
+        description: Data feed source. 'iex' = IEX (free), 'sip' = SIP (premium), 'otc' = OTC.
+      responses:
+        '200':
+          description: Chart data with historical bars
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChartResponse'
+              examples:
+                daily_chart:
+                  summary: Daily chart data for AAPL
+                  value:
+                    data:
+                      symbol: AAPL
+                      bars:
+                      - timestamp: '2025-01-15T16:00:00Z'
+                        open: 175.25
+                        high: 177.5
+                        low: 174.8
+                        close: 176.75
+                        volume: 5000000
+                        tradeCount: 12500
+                        volumeWeightedAveragePrice: 176.2
+                      - timestamp: '2025-01-14T16:00:00Z'
+                        open: 174
+                        high: 175.5
+                        low: 173.5
+                        close: 175.25
+                        volume: 4800000
+                        tradeCount: 12000
+                        volumeWeightedAveragePrice: 174.75
+                      - timestamp: '2025-01-13T16:00:00Z'
+                        open: 173.5
+                        high: 174.8
+                        low: 172.9
+                        close: 174
+                        volume: 5200000
+                        tradeCount: 13000
+                        volumeWeightedAveragePrice: 173.9
+                      nextPageToken: null
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /assets/{symbol}:
+    get:
+      tags:
+      - Assets
+      summary: Get a single asset by symbol/ticker
+      description: 'Looks up an asset by symbol across all supported markets and providers.
+
+
+        **Resolution flow:**
+
+        1. Checks database for cached asset
+
+        2. If not found or stale, queries appropriate provider based on market hint
+
+        3. If no market hint, searches all available providers (Alpaca for US, Naya for Nigeria)
+
+        4. Returns asset with current price data
+
+
+        **Supported markets:**
+
+        - US: XNAS (NASDAQ), XNYS (NYSE), BATS, ARCA, OTC
+
+        - Nigeria: XNSA (Nigerian Stock Exchange)
+
+        '
+      operationId: getAssetBySymbol
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Asset ticker symbol (e.g., AAPL, MSFT, DANGOTE)
+        example: AAPL
+      - name: market
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - XNAS
+          - XNYS
+          - BATS
+          - ARCA
+          - OTC
+          - XNSA
+        description: "Optional market hint for faster lookup. If provided, only the corresponding \nprovider is queried. Without\
+          \ this hint, all providers are searched.\n"
+        example: XNAS
+      responses:
+        '200':
+          description: Asset information with current price data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AssetSearchResult'
+              examples:
+                asset_details:
+                  summary: Asset details for AAPL
+                  value:
+                    data:
+                      id: b0b6dd9d-8b9b-48b9-bbb8-bbbb49bb1bbb
+                      class: us_equity
+                      market: XNAS
+                      symbol: AAPL
+                      name: Apple Inc.
+                      status: active
+                      tradable: true
+                      marginable: true
+                      shortable: true
+                      easy_to_borrow: true
+                      fractionable: true
+                      currency: USD
+                      price: 178.5
+                      change: 1.5
+                      changePercent: 0.85
+                      previousClose: 177
+                      bidPrice: 178.48
+                      askPrice: 178.52
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /accounts/{account_id}/funding-sources:
+    get:
+      tags:
+      - Funding Sources
+      summary: List funding sources for an account
+      description: 'Retrieves all connected funding sources (bank accounts) for a specific account.
+
+        Currently supports Plaid-connected bank accounts.
+
+        Filter by provider type or retrieve all sources.
+
+        '
+      operationId: getFundingSources
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Account ID
+        example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - plaid
+          - all
+          default: all
+        description: Filter funding sources by provider type. Defaults to 'all' which returns all connected sources.
+      responses:
+        '200':
+          description: Funding sources retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1funding-sources~1plaid~1connect/post/responses/200/content/application~1json/schema/properties/data/properties/item'
+                        description: List of connected funding sources (Plaid items with accounts)
+              examples:
+                funding_sources:
+                  summary: List of funding sources
+                  value:
+                    status: success
+                    data:
+                      items:
+                      - id: 123e4567-e89b-12d3-a456-426614174000
+                        itemId: item_abc123
+                        institutionId: ins_123456
+                        institutionName: Chase Bank
+                        status: ACTIVE
+                        accounts:
+                        - id: 234f5678-f9ac-23e4-b567-537725285115
+                          accountId: acc_1234567890
+                          accountName: Checking Account
+                          accountType: depository
+                          accountSubtype: checking
+                          mask: '0000'
+                        createdAt: '2026-01-22T10:30:00Z'
+                        updatedAt: '2026-01-22T10:30:00Z'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /accounts/{account_id}/funding-sources/{id}:
+    delete:
+      tags:
+      - Funding Sources
+      summary: Disconnect a funding source
+      description: 'Disconnects a funding source by setting its status to DISCONNECTED.
+
+        This prevents the funding source from being used for future transfers but preserves the connection history.
+
+        The funding source must belong to the authenticated account.
+
+        '
+      operationId: disconnectFundingSource
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Account ID
+        example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Funding source ID (internal database ID)
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - plaid
+          default: plaid
+        description: Provider type of the funding source. Defaults to 'plaid' for backward compatibility.
+      responses:
+        '200':
+          description: Funding source disconnected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Funding source disconnected successfully
+              examples:
+                disconnected:
+                  summary: Funding source disconnected
+                  value:
+                    status: success
+                    message: Funding source disconnected successfully
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /accounts/{account_id}/funding-sources/plaid/link-token:
+    post:
+      tags:
+      - Funding Sources
+      summary: Create a Plaid Link token
+      description: 'Creates a Plaid Link token for initializing Plaid Link.
+
+
+        **Two integration options:**
+
+        1. **SDK Integration** (default): Use the link_token with Plaid Link SDK in your mobile/web app
+
+        2. **Hosted Link**: Set enable_hosted_link=true to get a hosted_link_url that redirects users to a Plaid-hosted page
+
+
+        For Hosted Link, users complete the flow on Plaid''s site and are redirected back to your application.
+
+        '
+      operationId: createPlaidLinkToken
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Account ID
+        example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Request body for creating a Link token. \nSet enable_hosted_link to true to get a hosted_link_url\
+                \ for Plaid Hosted Link flow.\n"
+              properties:
+                enable_hosted_link:
+                  type: boolean
+                  default: false
+                  description: "If true, returns a hosted_link_url that can be used to redirect users \nto a Plaid-hosted\
+                    \ page for bank account linking. \nWhen false or omitted, only returns a link_token for SDK-based integration.\n"
+                  example: true
+            examples:
+              sdk_flow:
+                summary: SDK Integration (default)
+                value:
+                  enable_hosted_link: false
+              hosted_link:
+                summary: Hosted Link Integration
+                value:
+                  enable_hosted_link: true
+      responses:
+        '200':
+          description: Link token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkTokenResponse'
+              examples:
+                sdk_response:
+                  summary: SDK Integration Response
+                  value:
+                    status: success
+                    data:
+                      link_token: link-production-abc123def456
+                      hosted_link_url: null
+                hosted_link_response:
+                  summary: Hosted Link Response
+                  value:
+                    status: success
+                    data:
+                      link_token: link-production-abc123def456
+                      hosted_link_url: https://hosted.plaid.com/link/abc123def456
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+  /accounts/{account_id}/funding-sources/plaid/connect:
+    post:
+      tags:
+      - Funding Sources
+      summary: Connect a bank account via Plaid
+      description: 'Exchanges a Plaid public token for an access token and stores the Plaid item connection.
+
+        This allows users to connect their bank account for use in deposits and withdrawals.
+
+        '
+      operationId: connectPlaidAccount
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Account ID
+        example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - public_token
+              properties:
+                public_token:
+                  type: string
+                  description: Public token from Plaid Link
+                  example: public-production-abc123def456
+            examples:
+              connect_account:
+                summary: Connect bank account
+                value:
+                  public_token: public-production-abc123def456
+      responses:
+        '200':
+          description: Account connected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Account connected successfully
+                  data:
+                    type: object
+                    properties:
+                      item:
+                        type: object
+                        description: A connected Plaid item representing a bank institution connection
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            description: Internal Plaid item ID
+                            example: 123e4567-e89b-12d3-a456-426614174000
+                          itemId:
+                            type: string
+                            description: Plaid item_id (unique identifier from Plaid)
+                            example: item_abc123
+                          institutionId:
+                            type: string
+                            nullable: true
+                            description: Plaid institution_id
+                            example: ins_123456
+                          institutionName:
+                            type: string
+                            nullable: true
+                            description: Bank/institution name
+                            example: Chase Bank
+                          status:
+                            type: string
+                            enum:
+                            - ACTIVE
+                            - DISCONNECTED
+                            - ERROR
+                            default: ACTIVE
+                            description: Connection status
+                            example: ACTIVE
+                          accounts:
+                            type: array
+                            items:
+                              type: object
+                              description: A bank account connected via Plaid
+                              properties:
+                                id:
+                                  type: string
+                                  format: uuid
+                                  description: Internal Plaid account ID
+                                  example: 123e4567-e89b-12d3-a456-426614174001
+                                accountId:
+                                  type: string
+                                  description: Plaid account_id (unique identifier from Plaid)
+                                  example: acc_1234567890
+                                accountName:
+                                  type: string
+                                  description: Account name from Plaid
+                                  example: Checking Account
+                                accountType:
+                                  type: string
+                                  description: Account type (depository, credit, etc.)
+                                  example: depository
+                                accountSubtype:
+                                  type: string
+                                  nullable: true
+                                  description: Account subtype (checking, savings, etc.)
+                                  example: checking
+                                mask:
+                                  type: string
+                                  nullable: true
+                                  description: Last 4 digits of account number
+                                  example: '0000'
+                            description: List of bank accounts associated with this item
+                          createdAt:
+                            type: string
+                            format: date-time
+                            description: When the item was connected
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            description: Last update timestamp
+              examples:
+                connected:
+                  summary: Account connected successfully
+                  value:
+                    status: success
+                    message: Account connected successfully
+                    data:
+                      item:
+                        id: 123e4567-e89b-12d3-a456-426614174000
+                        itemId: item_abc123
+                        institutionId: ins_123456
+                        institutionName: Chase Bank
+                        status: ACTIVE
+                        accounts:
+                        - id: 234f5678-f9ac-23e4-b567-537725285115
+                          accountId: acc_1234567890
+                          accountName: Checking Account
+                          accountType: depository
+                          accountSubtype: checking
+                          mask: '0000'
+                        createdAt: '2026-01-22T10:30:00Z'
+                        updatedAt: '2026-01-22T10:30:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+  /webhooks/event-types:
+    get:
+      tags:
+      - Webhooks
+      summary: Get all available event types
+      description: Retrieves all event types that can be subscribed to via webhooks.
+      operationId: getAvailableEventTypes
+      responses:
+        '200':
+          description: Event types retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      eventTypes:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EventType'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /webhooks:
+    get:
+      tags:
+      - Webhooks
+      summary: List all webhooks
+      description: Retrieves all webhooks configured for the authenticated tenant.
+      operationId: listWebhooks
+      responses:
+        '200':
+          description: Webhooks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      webhooks:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Webhook'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+      - Webhooks
+      summary: Create a new webhook
+      description: Creates a new webhook subscription.
+      operationId: createWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookRequest'
+      responses:
+        '201':
+          description: Webhook created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      webhook:
+                        $ref: '#/components/schemas/Webhook'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /webhooks/{webhook_id}:
+    patch:
+      tags:
+      - Webhooks
+      summary: Update a webhook
+      description: Updates an existing webhook subscription.
+      operationId: updateWebhook
+      parameters:
+      - name: webhook_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eventTypeNames:
+                  type: array
+                  items:
+                    type: string
+                name:
+                  type: string
+                url:
+                  type: string
+                  format: uri
+                description:
+                  type: string
+                  nullable: true
+                status:
+                  type: string
+                  enum:
+                  - ACTIVE
+                  - INACTIVE
+      responses:
+        '200':
+          description: Webhook updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      webhook:
+                        $ref: '#/components/schemas/Webhook'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags:
+      - Webhooks
+      summary: Delete a webhook
+      description: Deletes a webhook subscription.
+      operationId: deleteWebhook
+      parameters:
+      - name: webhook_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Webhook deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /accounts/{account_id}/deposits:
+    post:
+      tags:
+      - Transfers
+      summary: Initiate a new deposit
+      description: 'Creates a new deposit request for the specified account.
+
+        Supports multiple funding methods: ACH via Plaid, Manual Bank Transfer, and Wire.
+
+        '
+      operationId: initiateDeposit
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+        description: 'A unique key to ensure idempotency of the request.
+
+          If a request with the same idempotency key has already been processed,
+
+          the original response will be returned.
+
+          '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDepositRequest'
+      responses:
+        '201':
+          description: Deposit initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Conflict - Idempotency key already used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+      - Transfers
+      summary: List deposits for an account
+      description: Returns a list of deposits for the specified account with optional filters.
+      operationId: listDeposits
+      parameters:
+      - name: account_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The unique identifier of the investor account.
+      - name: method
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ach_plaid
+          - manual_bank_transfer
+          - wire
+        description: Filter deposits by method.
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - processing
+          - received
+          - completed
+          - expired
+          - canceled
+          - failed
+        description: Filter deposits by status.
+      - name: currency
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 3
+          maxLength: 3
+        description: Filter deposits by currency (3-letter ISO code).
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        description: Filter deposits from this date (YYYY-MM-DD).
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        description: Filter deposits to this date (YYYY-MM-DD).
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+        description: Maximum number of deposits to return.
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Number of deposits to skip for pagination.
+      responses:
+        '200':
+          description: List of deposits for the account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /accounts/{account_id}/deposits/{deposit_id}:
+    get:
+      tags:
+      - Transfers
+      summary: Get deposit details
+      description: Returns details of a specific deposit.
+      operationId: getDeposit
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - name: deposit_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The unique identifier of the deposit.
+      responses:
+        '200':
+          description: Deposit details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /accounts/{account_id}/deposits/{deposit_id}/cancel:
+    post:
+      tags:
+      - Transfers
+      summary: Cancel a pending deposit
+      description: 'Cancels a deposit that is in a cancellable state (typically PENDING).
+
+        Once cancelled, the deposit cannot be resumed.
+
+        '
+      operationId: cancelDeposit
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits~1%7Bdeposit_id%7D/get/parameters/1'
+      responses:
+        '200':
+          description: Deposit cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /accounts/{account_id}/withdrawals:
+    post:
+      tags:
+      - Transfers
+      summary: Initiate a new withdrawal
+      description: 'Creates a new withdrawal request from the specified account''s wallet.
+
+        Supports ACH via Plaid and Wire transfer methods.
+
+        '
+      operationId: initiateWithdrawal
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/post/parameters/1'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWithdrawalRequest'
+      responses:
+        '201':
+          description: Withdrawal initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Conflict - Idempotency key already used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+      - Transfers
+      summary: List withdrawals for an account
+      description: Returns a list of withdrawals for the specified account with optional filters.
+      operationId: listWithdrawals
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - name: method
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ach_plaid
+          - wire
+        description: Filter withdrawals by method.
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - processing
+          - submitted
+          - completed
+          - canceled
+          - failed
+        description: Filter withdrawals by status.
+      - name: currency
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 3
+          maxLength: 3
+        description: Filter withdrawals by currency (3-letter ISO code).
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        description: Filter withdrawals from this date (YYYY-MM-DD).
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        description: Filter withdrawals to this date (YYYY-MM-DD).
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+        description: Maximum number of withdrawals to return.
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Number of withdrawals to skip for pagination.
+      responses:
+        '200':
+          description: List of withdrawals for the account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /accounts/{account_id}/withdrawals/{withdrawal_id}:
+    get:
+      tags:
+      - Transfers
+      summary: Get withdrawal details
+      description: Returns details of a specific withdrawal.
+      operationId: getWithdrawal
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - name: withdrawal_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The unique identifier of the withdrawal.
+      responses:
+        '200':
+          description: Withdrawal details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /accounts/{account_id}/withdrawals/{withdrawal_id}/cancel:
+    post:
+      tags:
+      - Transfers
+      summary: Cancel a pending withdrawal
+      description: 'Cancels a withdrawal that is in a cancellable state (typically PENDING).
+
+        Once cancelled, the hold on funds is released back to the wallet.
+
+        '
+      operationId: cancelWithdrawal
+      parameters:
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1deposits/get/parameters/0'
+      - $ref: '#/paths/~1accounts~1%7Baccount_id%7D~1withdrawals~1%7Bwithdrawal_id%7D/get/parameters/1'
+      responses:
+        '200':
+          description: Withdrawal cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
-    BluumBasicAuth:
+    BluumApiKeyAuth:
       type: http
       scheme: basic
-      description: |
-        HTTP Basic Authentication using the **API Key** as username and **API Secret** as password.
+      description: 'HTTP Basic Authentication using the **API Key** as username and **API Secret** as password.
+
+        '
   schemas:
     NewAccountRequest:
       type: object
       required:
-        - account_type
-        - contact
-        - identity
+      - account_type
+      - contact
+      - identity
       properties:
         account_type:
           type: string
           enum:
-            - trading
-            - individual
-            - joint
-            - ira
-            - corporate
+          - trading
+          - individual
+          - joint
+          - ira
+          - corporate
           description: The type of investment account to open.
           example: trading
         contact:
           type: object
           required:
-            - email_address
-            - phone_number
-            - street_address
-            - city
-            - state
-            - postal_code
-            - country
+          - email_address
+          - phone_number
+          - street_address
+          - city
+          - state
+          - postal_code
+          - country
           properties:
             email_address:
               type: string
@@ -535,7 +2694,7 @@ components:
                 type: string
               description: Street address lines (supports multiple lines).
               example:
-                - 123 Main St
+              - 123 Main St
             city:
               type: string
               description: City name.
@@ -555,14 +2714,14 @@ components:
         identity:
           type: object
           required:
-            - first_name
-            - last_name
-            - date_of_birth
-            - tax_id
-            - tax_id_type
-            - country_of_citizenship
-            - country_of_birth
-            - country_of_tax_residence
+          - first_name
+          - last_name
+          - date_of_birth
+          - tax_id
+          - tax_id_type
+          - country_of_citizenship
+          - country_of_birth
+          - country_of_tax_residence
           properties:
             first_name:
               type: string
@@ -584,13 +2743,37 @@ components:
             tax_id_type:
               type: string
               enum:
-                - USA_SSN
-                - USA_EIN
-                - CAN_SIN
-                - GBR_NINO
-                - AUS_TFN
-              description: Type of tax identification number.
-              example: USA_SSN
+              - SSN
+              - ITIN
+              - EIN
+              - SIN
+              - NINO
+              - TFN
+              - VAT
+              - TIN
+              - OTHER
+              description: 'Type of tax identification number:
+
+                - SSN: Social Security Number (US)
+
+                - ITIN: Individual Taxpayer Identification Number (US)
+
+                - EIN: Employer Identification Number (US)
+
+                - SIN: Social Insurance Number (Canada)
+
+                - NINO: National Insurance Number (UK)
+
+                - TFN: Tax File Number (Australia)
+
+                - VAT: Value Added Tax Number
+
+                - TIN: Tax Identification Number (generic)
+
+                - OTHER: Other tax ID type
+
+                '
+              example: SSN
             country_of_citizenship:
               type: string
               description: ISO country code for citizenship (format varies by country).
@@ -608,15 +2791,15 @@ components:
               items:
                 type: string
                 enum:
-                  - employment_income
-                  - business_income
-                  - investment_income
-                  - inheritance
-                  - gift
-                  - other
+                - employment_income
+                - business_income
+                - investment_income
+                - inheritance
+                - gift
+                - other
               description: Primary sources of funding for the account.
               example:
-                - employment_income
+              - employment_income
         disclosures:
           type: object
           description: Regulatory disclosures and compliance information.
@@ -643,19 +2826,19 @@ components:
           items:
             type: object
             required:
-              - agreement
-              - agreed
-              - signed_at
-              - ip_address
+            - agreement
+            - agreed
+            - signed_at
+            - ip_address
             properties:
               agreement:
                 type: string
                 enum:
-                  - account_agreement
-                  - customer_agreement
-                  - margin_agreement
-                  - options_agreement
-                  - privacy_policy
+                - account_agreement
+                - customer_agreement
+                - margin_agreement
+                - options_agreement
+                - privacy_policy
                 description: Type of agreement signed.
                 example: account_agreement
               agreed:
@@ -682,24 +2865,24 @@ components:
           example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
         account_number:
           type: string
+          nullable: true
           description: The actual brokerage account number.
           example: '968430933'
         status:
           type: string
           enum:
-            - SUBMITTED
-            - ACTIVE
-            - PENDING_APPROVAL
-            - CLOSED
-            - SUSPENDED
+          - ACTIVE
+          - INACTIVE
+          - SUSPENDED
           description: Current status of the account.
-          example: SUBMITTED
+          example: ACTIVE
         crypto_status:
           type: string
           enum:
-            - ACTIVE
-            - INACTIVE
-            - SUSPENDED
+          - ACTIVE
+          - INACTIVE
+          - SUSPENDED
+          nullable: true
           description: Status of crypto trading capabilities.
           example: INACTIVE
         currency:
@@ -725,6 +2908,7 @@ components:
               example: john.doe@example.com
             phone_number:
               type: string
+              nullable: true
               description: Primary phone number (format may vary by country).
               example: '+15555555555'
             street_address:
@@ -733,7 +2917,7 @@ components:
                 type: string
               description: Street address lines (supports multiple lines).
               example:
-                - 123 Main St
+              - 123 Main St
             local_street_address:
               type: string
               nullable: true
@@ -741,18 +2925,22 @@ components:
               example: null
             city:
               type: string
+              nullable: true
               description: City name.
               example: Berkeley
             state:
               type: string
+              nullable: true
               description: State or province code (format varies by country).
               example: CA
             postal_code:
               type: string
+              nullable: true
               description: Postal or ZIP code (format varies by country).
               example: '94704'
             country:
               type: string
+              nullable: true
               description: Country code (format varies by country).
               example: USA
         identity:
@@ -769,35 +2957,61 @@ components:
             date_of_birth:
               type: string
               format: date
+              nullable: true
               description: Date of birth in YYYY-MM-DD format.
               example: '1980-01-01'
             country_of_citizenship:
               type: string
+              nullable: true
               description: ISO country code for citizenship (format varies by country).
               example: NGA
             country_of_birth:
               type: string
+              nullable: true
               description: ISO country code for country of birth (format varies by country).
               example: NGA
             party_type:
               type: string
-              enum:
-                - natural_person
-                - legal_entity
-              description: Type of party (individual or entity).
+              description: Type of party (individual or entity). Can be empty string if not set.
               example: natural_person
             tax_id_type:
               type: string
               enum:
-                - USA_SSN
-                - USA_EIN
-                - CAN_SIN
-                - GBR_NINO
-                - AUS_TFN
-              description: Type of tax identification number.
-              example: USA_SSN
+              - SSN
+              - ITIN
+              - EIN
+              - SIN
+              - NINO
+              - TFN
+              - VAT
+              - TIN
+              - OTHER
+              nullable: true
+              description: 'Type of tax identification number:
+
+                - SSN: Social Security Number (US)
+
+                - ITIN: Individual Taxpayer Identification Number (US)
+
+                - EIN: Employer Identification Number (US)
+
+                - SIN: Social Insurance Number (Canada)
+
+                - NINO: National Insurance Number (UK)
+
+                - TFN: Tax File Number (Australia)
+
+                - VAT: Value Added Tax Number
+
+                - TIN: Tax Identification Number (generic)
+
+                - OTHER: Other tax ID type
+
+                '
+              example: SSN
             country_of_tax_residence:
               type: string
+              nullable: true
               description: ISO country code for tax residence (format varies by country).
               example: NGA
             funding_source:
@@ -805,15 +3019,15 @@ components:
               items:
                 type: string
                 enum:
-                  - employment_income
-                  - business_income
-                  - investment_income
-                  - inheritance
-                  - gift
-                  - other
+                - employment_income
+                - business_income
+                - investment_income
+                - inheritance
+                - gift
+                - other
               description: Primary sources of funding for the account.
               example:
-                - employment_income
+              - employment_income
         disclosures:
           type: object
           properties:
@@ -851,11 +3065,11 @@ components:
               agreement:
                 type: string
                 enum:
-                  - account_agreement
-                  - customer_agreement
-                  - margin_agreement
-                  - options_agreement
-                  - privacy_policy
+                - account_agreement
+                - customer_agreement
+                - margin_agreement
+                - options_agreement
+                - privacy_policy
                 description: Type of agreement signed.
                 example: account_agreement
               signed_at:
@@ -866,10 +3080,12 @@ components:
               ip_address:
                 type: string
                 format: ipv4
+                nullable: true
                 description: IP address from which the agreement was signed.
                 example: 127.0.0.1
               revision:
                 type: string
+                nullable: true
                 description: Version or revision of the agreement.
                 example: 16.2021.05
               account_id:
@@ -880,18 +3096,18 @@ components:
         account_type:
           type: string
           enum:
-            - trading
-            - individual
-            - joint
-            - ira
-            - corporate
+          - trading
+          - individual
+          - joint
+          - ira
+          - corporate
           description: The type of investment account.
           example: trading
         trading_type:
           type: string
           enum:
-            - margin
-            - cash
+          - margin
+          - cash
           description: The type of trading account.
           example: margin
         trading_configurations:
@@ -904,20 +3120,20 @@ components:
           items:
             type: string
             enum:
-              - us_equity
-              - us_option
-              - crypto
-              - bonds
-              - etf
-              - mutual_funds
+            - us_equity
+            - us_option
+            - crypto
+            - bonds
+            - etf
+            - mutual_funds
           description: Asset classes enabled for trading on this account.
           example:
-            - us_equity
+          - us_equity
     DocumentUploadRequest:
       type: object
       required:
-        - file
-        - document_type
+      - file
+      - document_type
       properties:
         file:
           type: string
@@ -926,9 +3142,9 @@ components:
         document_type:
           type: string
           enum:
-            - id_verification
-            - proof_of_address
-            - w9_form
+          - id_verification
+          - proof_of_address
+          - w9_form
           description: The type of document being uploaded.
     DocumentResponse:
       type: object
@@ -942,54 +3158,119 @@ components:
         upload_status:
           type: string
           enum:
-            - processing
-            - approved
-            - rejected
+          - processing
+          - approved
+          - rejected
         uploaded_at:
           type: string
           format: date-time
     OrderRequest:
       type: object
       required:
-        - symbol
-        - qty
-        - side
-        - type
-        - time_in_force
+      - symbol
+      - side
+      - type
+      - time_in_force
       properties:
         symbol:
           type: string
           description: The ticker symbol of the asset (e.g., AAPL).
           example: AAPL
+        market:
+          type: string
+          description: Market identifier (e.g., "NASDAQ", "NYSE"). Optional.
+          example: NASDAQ
+        isin:
+          type: string
+          description: International Securities Identification Number. Optional.
+          example: US0378331005
+        figi:
+          type: string
+          description: Financial Instrument Global Identifier. Optional.
+          example: BBG000B9XRY4
         qty:
           type: string
-          description: Quantity of shares to trade.
+          description: Quantity of shares to trade (required if notional not provided, required for sell orders).
           example: '5'
+        notional:
+          type: string
+          description: Dollar amount to trade (required if qty not provided, only for buy market orders).
+          example: '1000.00'
         side:
           type: string
           enum:
-            - buy
-            - sell
+          - buy
+          - sell
           description: Whether to buy or sell the asset.
           example: buy
         type:
           type: string
           enum:
-            - market
-            - limit
-          description: Order type - market executes immediately at current price, limit sets a specific price.
+          - market
+          - limit
+          - stop
+          - stop_limit
+          - trailing_stop
+          description: 'Order type:
+
+            - market: Executes immediately at current market price
+
+            - limit: Sets a specific price limit
+
+            - stop: Stop loss order that triggers at stop price
+
+            - stop_limit: Stop order with a limit price
+
+            - trailing_stop: Trailing stop order
+
+            '
           example: limit
         time_in_force:
           type: string
           enum:
-            - day
-            - gtc
-          description: How long the order remains active. 'day' expires at end of trading day, 'gtc' (Good Till Cancelled) remains active until filled or cancelled.
+          - day
+          - gtc
+          - opg
+          - cls
+          - ioc
+          - fok
+          description: 'How long the order remains active:
+
+            - day: Expires at end of trading day
+
+            - gtc: Good Till Cancelled - remains active until filled or cancelled
+
+            - opg: Opening - executes at market open
+
+            - cls: Closing - executes at market close
+
+            - ioc: Immediate or Cancel - fills immediately or cancels
+
+            - fok: Fill or Kill - fills completely or cancels
+
+            '
           example: day
         limit_price:
           type: string
-          description: Price limit for limit orders (required when type is 'limit').
+          description: Price limit for limit/stop_limit orders (required when type is 'limit' or 'stop_limit').
           example: '175.00'
+        stop_price:
+          type: string
+          description: Stop price for stop/stop_limit orders (required when type is 'stop' or 'stop_limit').
+          example: '170.00'
+        trail_percent:
+          type: string
+          description: Trail percentage for trailing stop orders (required for trailing_stop if trail_price not provided).
+          example: '2.5'
+        trail_price:
+          type: string
+          description: Trail price for trailing stop orders (required for trailing_stop if trail_percent not provided).
+          example: '5.00'
+        extended_hours:
+          type: boolean
+          default: false
+          description: Whether to allow extended hours trading.
+          example: false
         client_order_id:
           type: string
           description: Optional client-provided identifier for tracking the order.
@@ -1001,14 +3282,18 @@ components:
         commission_type:
           type: string
           enum:
-            - notional
-            - qty
-            - bps
-          description: |
-            Commission calculation method:
+          - notional
+          - qty
+          - bps
+          description: 'Commission calculation method:
+
             - notional: Charge commission on a per order basis (default)
+
             - qty: Charge commission on a per qty/contract basis, pro rated
+
             - bps: Percent commission in basis points (up to 2 decimal places)
+
+            '
           example: notional
     Order:
       type: object
@@ -1029,33 +3314,60 @@ components:
           example: AAPL
         qty:
           type: string
-          description: Quantity of shares ordered.
+          description: Quantity of shares ordered (if quantity-based order).
           example: '5'
+        notional:
+          type: string
+          description: Dollar amount ordered (if notional-based order).
+          example: '1000.00'
         side:
           type: string
           enum:
-            - buy
-            - sell
+          - buy
+          - sell
           description: Whether to buy or sell the asset.
           example: buy
         type:
           type: string
           enum:
-            - market
-            - limit
+          - market
+          - limit
+          - stop
+          - stop_limit
+          - trailing_stop
           description: Order type.
           example: limit
         time_in_force:
           type: string
           enum:
-            - day
-            - gtc
+          - day
+          - gtc
+          - opg
+          - cls
+          - ioc
+          - fok
           description: How long the order remains active.
           example: day
         limit_price:
           type: string
-          description: Price limit for limit orders.
+          description: Price limit for limit/stop_limit orders.
           example: '175.00'
+        stop_price:
+          type: string
+          description: Stop price for stop/stop_limit orders.
+          example: '170.00'
+        trail_percent:
+          type: string
+          description: Trail percentage for trailing stop orders.
+          example: '2.5'
+        trail_price:
+          type: string
+          description: Trail price for trailing stop orders.
+          example: '5.00'
+        extended_hours:
+          type: boolean
+          description: Whether extended hours trading was enabled.
+          example: false
         client_order_id:
           type: string
           description: Client-provided identifier for tracking the order.
@@ -1063,11 +3375,11 @@ components:
         status:
           type: string
           enum:
-            - accepted
-            - filled
-            - partially_filled
-            - canceled
-            - rejected
+          - accepted
+          - filled
+          - partially_filled
+          - canceled
+          - rejected
           description: Current status of the order.
           example: accepted
         filled_qty:
@@ -1089,9 +3401,9 @@ components:
         commission_type:
           type: string
           enum:
-            - notional
-            - qty
-            - bps
+          - notional
+          - qty
+          - bps
           description: Commission calculation method used.
           example: notional
         submitted_at:
@@ -1116,118 +3428,195 @@ components:
           nullable: true
           description: Reason for order rejection if applicable.
           example: null
-    Asset:
+    AssetSearchResult:
       type: object
+      description: Asset information including metadata and current price data
       properties:
         id:
           type: string
-          format: uuid
-          example: 6c5b2403-24a9-4b55-a3dd-5cb1e4b50da6
+          description: Unique identifier for the asset
+          example: b0b6dd9d-8b9b-48b9-bbb8-bbbb49bb1bbb
         class:
           type: string
           enum:
-            - us_equity
-            - crypto
-        exchange:
+          - us_equity
+          - crypto
+          - us_option
+          - ng_equity
+          - ng_bond
+          - ng_etf
+          description: 'Asset class:
+
+            - us_equity: US stocks
+
+            - crypto: Cryptocurrencies
+
+            - us_option: US options
+
+            - ng_equity: Nigerian stocks (XNSA)
+
+            - ng_bond: Nigerian bonds (XNSA)
+
+            - ng_etf: Nigerian ETFs (XNSA)
+
+            '
+          example: us_equity
+        market:
           type: string
+          description: 'Market/exchange code (ISO 10383 MIC):
+
+            - XNAS: NASDAQ
+
+            - XNYS: NYSE
+
+            - BATS: BATS Global Markets
+
+            - ARCA: NYSE Arca
+
+            - OTC: OTC Markets
+
+            - XNSA: Nigerian Stock Exchange
+
+            '
+          example: XNAS
         symbol:
           type: string
+          description: Asset ticker symbol
+          example: AAPL
         name:
           type: string
+          description: Full name of the asset
+          example: Apple Inc.
         status:
           type: string
+          enum:
+          - active
+          - inactive
+          description: Asset status
+          example: active
         tradable:
           type: boolean
+          description: Whether the asset is currently tradable
+          example: true
+        marginable:
+          type: boolean
+          description: Whether the asset can be traded on margin
+          example: true
+        shortable:
+          type: boolean
+          description: Whether the asset can be shorted
+          example: true
+        easy_to_borrow:
+          type: boolean
+          description: Whether the asset is easy to borrow for shorting
+          example: true
         fractionable:
           type: boolean
-    FundRequest:
-      type: object
-      required:
-        - amount
-        - funding_details
-      properties:
-        amount:
+          description: Whether the asset can be traded in fractional shares
+          example: true
+        price:
+          type: number
+          description: Current/last traded price (optional, when available)
+          example: 178.5
+        change:
+          type: number
+          description: Price change from previous close (optional)
+          example: 1.5
+        changePercent:
+          type: number
+          description: Percentage change from previous close (optional)
+          example: 0.85
+        previousClose:
+          type: number
+          description: Previous day's closing price (optional)
+          example: 177
+        bidPrice:
+          type: number
+          description: Current best bid price (optional)
+          example: 178.48
+        askPrice:
+          type: number
+          description: Current best ask price (optional)
+          example: 178.52
+        currency:
           type: string
-          description: Amount to fund the account.
-          example: '5000.00'
-        funding_details:
-          oneOf:
-            - $ref: '#/components/schemas/FiatFundingDetails'
-            - $ref: '#/components/schemas/CryptoFundingDetails'
-        description:
-          type: string
-          description: Optional description for the funding transaction.
-          example: Initial account funding
-        external_reference_id:
-          type: string
-          description: Optional external reference ID for client tracking.
-          example: ref_12345
-    FiatFundingDetails:
-      type: object
-      required:
-        - funding_type
-        - fiat_currency
-        - bank_account_id
-        - method
-      properties:
-        funding_type:
-          type: string
-          enum:
-            - fiat
-          description: Type of funding - fiat currency.
-          example: fiat
-        fiat_currency:
-          type: string
-          enum:
-            - USD
-          description: Fiat currency for the funding.
+          description: Currency code for asset pricing (ISO 4217)
           example: USD
-        bank_account_id:
-          type: string
-          description: ID of the bank account used for funding.
-          example: bank_id_abc987
-        method:
-          type: string
-          enum:
-            - ach
-            - wire
-          description: Payment method for fiat funding.
-          example: ach
-    CryptoFundingDetails:
-      type: object
       required:
-        - funding_type
-        - crypto_asset
-        - wallet_address
-        - network
+      - id
+      - class
+      - market
+      - symbol
+      - name
+      - status
+      - tradable
+      - marginable
+      - shortable
+      - easy_to_borrow
+      - fractionable
+      - currency
+    ChartResponse:
+      type: object
       properties:
-        funding_type:
+        symbol:
           type: string
-          enum:
-            - crypto
-          description: Type of funding - cryptocurrency.
-          example: crypto
-        crypto_asset:
+          description: Asset ticker symbol
+          example: AAPL
+        bars:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChartBar'
+          description: Array of historical bars
+        nextPageToken:
           type: string
-          enum:
-            - BTC
-            - ETH
-            - USDC
-            - USDT
-          description: Cryptocurrency asset for funding.
-          example: BTC
-        wallet_address:
+          description: Token for pagination to get next page of results (optional)
+          example: eyJpZCI6IjIwMjUtMDEtMTVUMTY6MDA6MDBaIiwiY3JlYXRlZEF0IjoiMjAyNS0wMS0xNVQxNjowMDowMFoifQ
+      required:
+      - symbol
+      - bars
+    ChartBar:
+      type: object
+      properties:
+        timestamp:
           type: string
-          description: Wallet address to send crypto from.
-          example: bc1qxy2k7732e73k23v20sghx98s5y4w
-        network:
-          type: string
-          enum:
-            - Bitcoin
-            - Ethereum
-            - Polygon
-          description: Blockchain network for the crypto transaction.
-          example: Bitcoin
+          format: date-time
+          description: Bar timestamp (ISO 8601 format)
+          example: '2025-01-15T16:00:00Z'
+        open:
+          type: number
+          description: Opening price
+          example: 150.25
+        high:
+          type: number
+          description: Highest price
+          example: 152.5
+        low:
+          type: number
+          description: Lowest price
+          example: 149.8
+        close:
+          type: number
+          description: Closing price
+          example: 151.75
+        volume:
+          type: integer
+          description: Trading volume
+          example: 5000000
+        tradeCount:
+          type: integer
+          description: Number of trades (optional)
+          example: 12500
+        volumeWeightedAveragePrice:
+          type: number
+          description: Volume weighted average price (optional)
+          example: 151.2
+      required:
+      - timestamp
+      - open
+      - high
+      - low
+      - close
+      - volume
     Transaction:
       type: object
       properties:
@@ -1244,18 +3633,18 @@ components:
         type:
           type: string
           enum:
-            - deposit
-            - withdrawal
+          - deposit
+          - withdrawal
           description: Type of transaction.
           example: deposit
         status:
           type: string
           enum:
-            - pending
-            - processing
-            - settled
-            - failed
-            - canceled
+          - pending
+          - processing
+          - settled
+          - failed
+          - canceled
           description: Current status of the transaction.
           example: pending
         amount:
@@ -1269,8 +3658,8 @@ components:
         funding_type:
           type: string
           enum:
-            - fiat
-            - crypto
+          - fiat
+          - crypto
           description: Type of funding used.
           example: fiat
         funding_details:
@@ -1314,6 +3703,484 @@ components:
           nullable: true
           description: Reason for transaction failure if applicable.
           example: null
+    LinkTokenResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            link_token:
+              type: string
+              description: Plaid Link token for initializing Plaid Link
+              example: link-production-abc123def456
+            hosted_link_url:
+              type: string
+              format: uri
+              nullable: true
+              description: 'Hosted Link URL (only present when enable_hosted_link was set to true).
+
+                Direct users to this URL to start the Plaid-hosted bank linking flow.
+
+                After completion, Plaid redirects back to your application.
+
+                '
+              example: https://hosted.plaid.com/link/abc123def456
+    Webhook:
+      type: object
+      required:
+      - eventTypes
+      - name
+      - url
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventType'
+          description: Array of webhook event types
+        name:
+          type: string
+          description: Human-readable name for the webhook
+        url:
+          type: string
+          format: uri
+          description: Webhook URL endpoint
+        description:
+          type: string
+          nullable: true
+          description: Optional description for the webhook
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          default: ACTIVE
+        secret:
+          type: string
+          nullable: true
+          description: Secret for webhook signature verification
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateWebhookRequest:
+      type: object
+      required:
+      - eventTypeNames
+      - name
+      - url
+      properties:
+        eventTypeNames:
+          type: array
+          items:
+            type: string
+          description: Array of webhook event type names (at least one required)
+        name:
+          type: string
+          description: Human-readable name for the webhook
+        url:
+          type: string
+          format: uri
+          description: Webhook URL endpoint
+        description:
+          type: string
+          nullable: true
+          description: Optional description for the webhook
+    EventType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Dot-notation name of the event (e.g., "order.filled")
+        category:
+          type: string
+          description: Event category (e.g., "order", "kyc")
+        description:
+          type: string
+          description: Human-readable description of the event
+        displayName:
+          type: string
+          nullable: true
+          description: Human-readable name for display
+    CreateDepositRequest:
+      type: object
+      required:
+      - amount
+      - method
+      properties:
+        amount:
+          type: string
+          pattern: ^\d+(\.\d{1,2})?$
+          description: The deposit amount as a decimal string with up to 2 decimal places.
+          example: '1000.00'
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          default: USD
+          description: The currency code (ISO 4217). Defaults to USD.
+          example: USD
+        method:
+          type: string
+          enum:
+          - ach_plaid
+          - manual_bank_transfer
+          - wire
+          description: 'The funding method for the deposit:
+
+            - `ach_plaid`: ACH transfer via Plaid
+
+            - `manual_bank_transfer`: Manual wire/ACH to Bluum''s bank account
+
+            - `wire`: Wire transfer (future)
+
+            '
+          example: manual_bank_transfer
+        description:
+          type: string
+          maxLength: 500
+          description: Optional description for the deposit.
+          example: Initial funding for investment account
+        plaid_options:
+          type: object
+          description: 'Options for Plaid ACH deposits.
+
+            Either public_token (from Plaid Link) or (item_id + account_id) must be provided.
+
+            '
+          properties:
+            public_token:
+              type: string
+              description: The Plaid public token obtained from Plaid Link. Required for new bank connections.
+              example: public-sandbox-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+            item_id:
+              type: string
+              description: The Plaid Item ID for an existing connection. Required with account_id if public_token not provided.
+              example: item_abc123
+            account_id:
+              type: string
+              description: The Plaid Account ID to use for the transfer. Required with item_id if public_token not provided.
+              example: acc_xyz789
+        manual_options:
+          type: object
+          description: Options for manual bank transfers. Currently no options required.
+          example: {}
+        wire_options:
+          type: object
+          description: Options for wire transfers. (Future implementation)
+          example: {}
+    DepositResponse:
+      type: object
+      description: Deposit record returned by the API.
+      properties:
+        deposit_id:
+          type: string
+          description: Unique identifier for the deposit.
+          example: dep_a1b2c3d4e5f6g7h8
+        account_id:
+          type: string
+          format: uuid
+          description: The investor account ID associated with the deposit.
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        wallet_id:
+          type: string
+          description: The wallet ID where funds will be credited.
+          example: wal_x1y2z3a4b5c6d7e8
+        method:
+          type: string
+          enum:
+          - ach_plaid
+          - manual_bank_transfer
+          - wire
+          description: The funding method used.
+          example: manual_bank_transfer
+        status:
+          type: string
+          enum:
+          - pending
+          - processing
+          - received
+          - completed
+          - expired
+          - canceled
+          - failed
+          description: 'Current status of the deposit:
+
+            - `pending`: Awaiting funds (manual) or processing initiation
+
+            - `processing`: Transfer in progress
+
+            - `received`: Funds received, pending completion (manual transfers)
+
+            - `completed`: Funds credited to wallet
+
+            - `expired`: Manual transfer not completed in time
+
+            - `canceled`: Cancelled by user or system
+
+            - `failed`: Transfer failed
+
+            '
+          example: pending
+        amount:
+          type: string
+          description: The deposit amount.
+          example: '1000.00'
+        currency:
+          type: string
+          description: The currency code.
+          example: USD
+        description:
+          type: string
+          nullable: true
+          description: User-provided description.
+          example: Initial funding
+        method_details:
+          type: object
+          nullable: true
+          description: 'Method-specific details. For manual_bank_transfer, includes:
+
+            - referenceCode: Unique code to include in bank transfer memo
+
+            - bankDetails: Bank account information for the transfer
+
+            '
+          example:
+            referenceCode: BLUUM-ABC123XY
+            bankDetails:
+              bankName: Bluum Finance Bank
+              accountName: Bluum Finance LLC
+              accountNumber: '****1234'
+              routingNumber: '021000021'
+              instructions: Include reference code "BLUUM-ABC123XY" in your transfer memo.
+        initiated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the deposit was initiated.
+          example: '2026-01-15T10:00:00.000Z'
+        received_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When funds were received (manual transfers).
+          example: '2026-01-16T11:00:00.000Z'
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the deposit was completed and funds credited.
+          example: '2026-01-16T12:00:00.000Z'
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When a pending manual deposit will expire.
+          example: '2026-01-22T10:00:00.000Z'
+        failure_reason:
+          type: string
+          nullable: true
+          description: Reason for failure, if applicable.
+          example: Insufficient funds
+        created_at:
+          type: string
+          format: date-time
+          description: When the deposit record was created.
+          example: '2026-01-15T09:00:00.000Z'
+    DepositListResponse:
+      type: object
+      properties:
+        deposits:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepositResponse'
+        total:
+          type: integer
+          description: Total number of deposits matching the filter criteria.
+          example: 10
+    CreateWithdrawalRequest:
+      type: object
+      required:
+      - amount
+      - method
+      properties:
+        amount:
+          type: string
+          pattern: ^\d+(\.\d{1,2})?$
+          description: The withdrawal amount as a decimal string with up to 2 decimal places.
+          example: '500.00'
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          default: USD
+          description: The currency code (ISO 4217). Defaults to USD.
+          example: USD
+        method:
+          type: string
+          enum:
+          - ach_plaid
+          - wire
+          description: 'The funding method for the withdrawal:
+
+            - `ach_plaid`: ACH transfer via Plaid to connected bank
+
+            - `wire`: Wire transfer (future)
+
+            '
+          example: ach_plaid
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          description: Optional description for the withdrawal.
+          example: Monthly withdrawal to checking account
+        plaid_options:
+          type: object
+          description: Options for Plaid ACH withdrawals. Requires a previously connected Plaid item.
+          required:
+          - item_id
+          - account_id
+          properties:
+            item_id:
+              type: string
+              description: The Plaid Item ID for the connected bank account.
+              example: item_abc123
+            account_id:
+              type: string
+              description: The Plaid Account ID to send funds to.
+              example: acc_xyz789
+        wire_options:
+          type: object
+          description: Options for wire withdrawals. (Future implementation)
+          example: {}
+    WithdrawalResponse:
+      type: object
+      description: Withdrawal record returned by the API.
+      properties:
+        withdrawal_id:
+          type: string
+          description: Unique identifier for the withdrawal.
+          example: wdr_a1b2c3d4e5f6g7h8
+        account_id:
+          type: string
+          format: uuid
+          description: The investor account ID associated with the withdrawal.
+          example: 3d0b0e65-35d3-4dcd-8df7-10286ebb4b4b
+        wallet_id:
+          type: string
+          description: The wallet ID from which funds are withdrawn.
+          example: wal_x1y2z3a4b5c6d7e8
+        method:
+          type: string
+          enum:
+          - ach_plaid
+          - wire
+          description: The funding method used.
+          example: ach_plaid
+        status:
+          type: string
+          enum:
+          - pending
+          - processing
+          - submitted
+          - completed
+          - canceled
+          - failed
+          description: 'Current status of the withdrawal:
+
+            - `pending`: Awaiting processing
+
+            - `processing`: Being processed
+
+            - `submitted`: Submitted to external provider
+
+            - `completed`: Funds sent successfully
+
+            - `canceled`: Cancelled by user or system
+
+            - `failed`: Transfer failed
+
+            '
+          example: processing
+        amount:
+          type: string
+          description: The withdrawal amount.
+          example: '500.00'
+        currency:
+          type: string
+          description: The currency code.
+          example: USD
+        description:
+          type: string
+          nullable: true
+          description: User-provided description.
+          example: Monthly payout
+        method_details:
+          type: object
+          nullable: true
+          description: 'Method-specific details. For ach_plaid, includes Plaid transfer information.
+
+            '
+          example:
+            plaidTransferId: trf_xyz789
+            plaidAccountId: acc_abc123
+        destination_details:
+          type: object
+          nullable: true
+          description: Details about the destination bank account.
+          example:
+            bankName: Chase Bank
+            accountMask: '****5678'
+        initiated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the withdrawal was initiated.
+          example: '2026-01-17T09:00:00.000Z'
+        submitted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the withdrawal was submitted to the external provider.
+          example: '2026-01-17T10:00:00.000Z'
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the withdrawal was completed and funds sent.
+          example: '2026-01-18T12:00:00.000Z'
+        failure_reason:
+          type: string
+          nullable: true
+          description: Reason for failure, if applicable.
+          example: Invalid bank account
+        created_at:
+          type: string
+          format: date-time
+          description: When the withdrawal record was created.
+          example: '2026-01-17T08:00:00.000Z'
+    WithdrawalListResponse:
+      type: object
+      properties:
+        withdrawals:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalResponse'
+        total:
+          type: integer
+          description: Total number of withdrawals matching the filter criteria.
+          example: 5
     ErrorResponse:
       type: object
       properties:
@@ -1335,6 +4202,15 @@ components:
           example:
             code: BLUM-401-001
             message: Missing or invalid Authorization header.
+    ForbiddenError:
+      description: Access to the requested resource is forbidden.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: BLUM-403-001
+            message: Access denied to this resource.
     BadRequestError:
       description: The request was malformed or failed validation.
       content:
@@ -1353,3 +4229,12 @@ components:
           example:
             code: BLUM-404-001
             message: Account with ID acc_a1b2c3d4e5f6g7h8 not found.
+    InternalServerError:
+      description: An internal server error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: BLUM-500-001
+            message: An internal server error occurred. Please try again later.
